@@ -34,7 +34,19 @@ from handlers.admin import (
     add_credits_command,
     generate_redeem_code_command,
     broadcast_command,
-    redeem_code_command
+    redeem_code_command,
+    ban_user_command,
+    unban_user_command,
+    ban_list_command,
+    lock_command,
+    unlock_command,
+    maintenance_command,
+    add_group_command,
+    remove_group_command,
+    group_list_command,
+    min_credits_command,
+    stats_command,
+    admin_help_command
 )
 
 logger = logging.getLogger(__name__)
@@ -73,6 +85,18 @@ def setup_bot(dispatcher):
         "addcredits": add_credits_command,
         "gencode": generate_redeem_code_command,
         "broadcast": broadcast_command,
+        "ban": ban_user_command,
+        "unban": unban_user_command,
+        "banlist": ban_list_command,
+        "lock": lock_command,
+        "unlock": unlock_command,
+        "maintenance": maintenance_command,
+        "addgroup": add_group_command,
+        "removegroup": remove_group_command,
+        "grouplist": group_list_command,
+        "mincredits": min_credits_command,
+        "stats": stats_command,
+        "adminhelp": admin_help_command,
     }
     
     # Register all commands with both / and . prefixes

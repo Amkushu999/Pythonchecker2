@@ -31,28 +31,32 @@ def index():
     """Home page"""
     return render_template('index.html', bot_name="HUMBL3 CH3CK4R", author="@amkuush")
 
-@app.route('/create-checkout-session', methods=['POST'])
+@app.route('/create-checkout-session', methods=['GET', 'POST'])
 def create_checkout_session():
     """Create a Stripe checkout session for premium subscription purchase"""
     try:
-        # Get user data from request
-        data = request.get_json()
-        user_id = data.get('user_id')
-        plan = data.get('plan')
+        # Handle both GET and POST methods
+        if request.method == 'POST':
+            # Get user data from request body
+            data = request.get_json()
+            user_id = data.get('user_id')
+            plan = data.get('plan')
+            reference_id = data.get('ref')
+        else:
+            # Get user data from URL parameters
+            user_id = request.args.get('user_id')
+            plan = request.args.get('plan')
+            reference_id = request.args.get('ref')
         
         if not user_id or not plan:
             return jsonify({"error": "Missing user_id or plan"}), 400
         
-        # Define prices based on plan
+        # Define prices based on plan (in cents)
         prices = {
-            "basic": {"price": 3000, "description": "Basic Tier (1 month)"},
-            "silver": {"price": 7500, "description": "Silver Tier (3 months)"},
-            "gold": {"price": 12000, "description": "Gold Tier (6 months)"},
-            "platinum": {"price": 20000, "description": "Platinum Tier (12 months)"},
-            # Keep backwards compatibility with older plans
-            "weekly": {"price": 1000, "description": "1 Week Premium Access"},
-            "monthly": {"price": 3000, "description": "1 Month Premium Access"},
-            "lifetime": {"price": 10000, "description": "Lifetime Premium Access"}
+            "basic": {"price": 999, "description": "Basic Tier (1 month)"},
+            "silver": {"price": 2499, "description": "Silver Tier (3 months)"},
+            "gold": {"price": 4499, "description": "Gold Tier (6 months)"},
+            "platinum": {"price": 7999, "description": "Platinum Tier (12 months)"},
         }
         
         if plan not in prices:
@@ -66,20 +70,27 @@ def create_checkout_session():
                     'currency': 'usd',
                     'product_data': {
                         'name': prices[plan]["description"],
+                        'description': 'HUMBL3 CH3CK4R Bot Premium Access'
                     },
                     'unit_amount': prices[plan]["price"],
                 },
                 'quantity': 1,
             }],
             mode='payment',
-            success_url=f'https://{YOUR_DOMAIN}/success?session_id={{CHECKOUT_SESSION_ID}}&user_id={user_id}&plan={plan}',
+            success_url=f'https://{YOUR_DOMAIN}/success?session_id={{CHECKOUT_SESSION_ID}}&user_id={user_id}&plan={plan}&ref={reference_id}',
             cancel_url=f'https://{YOUR_DOMAIN}/cancel',
             metadata={
                 'user_id': str(user_id),
-                'plan': plan
+                'plan': plan,
+                'reference_id': reference_id or ''
             }
         )
         
+        # If GET request, redirect to checkout URL
+        if request.method == 'GET':
+            return redirect(checkout_session.url)
+        
+        # If POST request, return session details as JSON
         return jsonify({"id": checkout_session.id, "url": checkout_session.url})
     except Exception as e:
         logger.error(f"Error creating checkout session: {str(e)}")

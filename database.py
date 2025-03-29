@@ -40,6 +40,14 @@ class Database:
             "stats": {
                 "total_checks": 0,
                 "successful_checks": 0
+            },
+            "authorized_groups": [],  # List of authorized group IDs
+            "banned_users": {},  # Dict of banned user IDs with reason and timestamp
+            "system_settings": {
+                "global_lock": False,  # Global lock status
+                "maintenance_mode": False,  # Maintenance mode status
+                "min_credits_for_private": 1,  # Minimum credits required for private use
+                "group_enabled": True  # Whether group usage is enabled
             }
         }
     
@@ -178,6 +186,129 @@ class Database:
     def get_all_users(self) -> Dict:
         """Get all users."""
         return self.data["users"]
+    
+    # Group management methods
+    def add_authorized_group(self, group_id: int) -> bool:
+        """Add a group to the authorized groups list."""
+        if group_id in self.data["authorized_groups"]:
+            return False
+        
+        self.data["authorized_groups"].append(group_id)
+        self._save_data()
+        return True
+    
+    def remove_authorized_group(self, group_id: int) -> bool:
+        """Remove a group from the authorized groups list."""
+        if group_id not in self.data["authorized_groups"]:
+            return False
+        
+        self.data["authorized_groups"].remove(group_id)
+        self._save_data()
+        return True
+    
+    def is_group_authorized(self, group_id: int) -> bool:
+        """Check if a group is authorized."""
+        return group_id in self.data["authorized_groups"]
+    
+    def get_authorized_groups(self) -> List[int]:
+        """Get all authorized groups."""
+        return self.data["authorized_groups"]
+    
+    # User ban management methods
+    def ban_user(self, user_id: int, reason: str) -> bool:
+        """Ban a user."""
+        if str(user_id) in self.data["banned_users"]:
+            return False
+        
+        self.data["banned_users"][str(user_id)] = {
+            "reason": reason,
+            "timestamp": int(time.time())
+        }
+        self._save_data()
+        return True
+    
+    def unban_user(self, user_id: int) -> bool:
+        """Unban a user."""
+        if str(user_id) not in self.data["banned_users"]:
+            return False
+        
+        del self.data["banned_users"][str(user_id)]
+        self._save_data()
+        return True
+    
+    def is_user_banned(self, user_id: int) -> bool:
+        """Check if a user is banned."""
+        return str(user_id) in self.data["banned_users"]
+    
+    def get_ban_reason(self, user_id: int) -> Optional[str]:
+        """Get the reason a user was banned."""
+        if not self.is_user_banned(user_id):
+            return None
+        
+        return self.data["banned_users"][str(user_id)]["reason"]
+    
+    def get_banned_users(self) -> Dict:
+        """Get all banned users."""
+        return self.data["banned_users"]
+    
+    # System settings methods
+    def set_global_lock(self, locked: bool) -> None:
+        """Set the global lock status."""
+        self.data["system_settings"]["global_lock"] = locked
+        self._save_data()
+    
+    def is_globally_locked(self) -> bool:
+        """Check if the system is globally locked."""
+        return self.data["system_settings"]["global_lock"]
+    
+    def set_maintenance_mode(self, enabled: bool) -> None:
+        """Set the maintenance mode status."""
+        self.data["system_settings"]["maintenance_mode"] = enabled
+        self._save_data()
+    
+    def is_in_maintenance_mode(self) -> bool:
+        """Check if the system is in maintenance mode."""
+        return self.data["system_settings"]["maintenance_mode"]
+    
+    def set_min_credits_for_private(self, amount: int) -> None:
+        """Set the minimum credits required for private use."""
+        self.data["system_settings"]["min_credits_for_private"] = amount
+        self._save_data()
+    
+    def get_min_credits_for_private(self) -> int:
+        """Get the minimum credits required for private use."""
+        return self.data["system_settings"]["min_credits_for_private"]
+    
+    def set_group_enabled(self, enabled: bool) -> None:
+        """Set whether group usage is enabled."""
+        self.data["system_settings"]["group_enabled"] = enabled
+        self._save_data()
+    
+    def is_group_enabled(self) -> bool:
+        """Check if group usage is enabled."""
+        return self.data["system_settings"]["group_enabled"]
+    
+    def can_use_in_private(self, user_id: int) -> bool:
+        """Check if a user can use the bot in private chat."""
+        if not self.user_exists(user_id):
+            return False
+        
+        user = self.get_user(user_id)
+        
+        # Premium users can always use in private
+        if user["is_premium"]:
+            # Check if premium has expired
+            if user["premium_expiry"] and user["premium_expiry"] < time.time():
+                # Premium expired, update user status
+                self.update_user(user_id, {"is_premium": False, "premium_expiry": None})
+                # Continue to credit check
+            else:
+                # Premium active
+                return True
+        
+        # Check if user has enough credits
+        min_credits = self.get_min_credits_for_private()
+        return user["credits"] >= min_credits
 
 # Create a global database instance
 db = Database()
