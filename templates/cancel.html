@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ bot_name }} - Payment Cancelled</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #e6edf3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+        }
+        .card-header {
+            background-color: #21262d;
+            border-bottom: 1px solid #30363d;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #238636;
+            border-color: #238636;
+        }
+        .btn-primary:hover {
+            background-color: #2ea043;
+            border-color: #2ea043;
+        }
+        .navbar {
+            background-color: #161b22;
+            border-bottom: 1px solid #30363d;
+        }
+        .footer {
+            background-color: #161b22;
+            border-top: 1px solid #30363d;
+            padding: 20px 0;
+            margin-top: 50px;
+        }
+        .cancel-icon {
+            font-size: 48px;
+            color: #f85149;
+            margin-bottom: 20px;
+        }
+        .premium-badge {
+            display: inline-block;
+            background-color: #ffca28;
+            color: #000;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                {{ bot_name }} <span class="premium-badge">PREMIUM</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        Payment Cancelled
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="cancel-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                            </svg>
+                        </div>
+                        <h3>Payment Cancelled</h3>
+                        <p>Your premium subscription payment was cancelled.</p>
+                        
+                        <div class="mt-4">
+                            <p>You can try again by returning to the Telegram bot and using the /buy command.</p>
+                            <a href="https://t.me/{{ bot_username }}" class="btn btn-primary">
+                                Go to Telegram Bot
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <p>{{ bot_name }} by {{ author }}</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

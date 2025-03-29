@@ -1,0 +1,142 @@
+{
+  "4": {
+    "brand": "Visa",
+    "type": "Credit",
+    "category": "Classic",
+    "country": "United States",
+    "bank": "JPMorgan Chase"
+  },
+  "5": {
+    "brand": "Mastercard",
+    "type": "Credit",
+    "category": "Standard",
+    "country": "United States",
+    "bank": "Citibank"
+  },
+  "3": {
+    "brand": "American Express",
+    "type": "Credit",
+    "category": "Premium",
+    "country": "United States",
+    "bank": "American Express"
+  },
+  "6": {
+    "brand": "Discover",
+    "type": "Credit",
+    "category": "Standard",
+    "country": "United States",
+    "bank": "Discover Bank"
+  },
+  "401200": {
+    "brand": "Visa",
+    "type": "Credit",
+    "category": "Classic",
+    "country": "United States",
+    "bank": "Bank of America"
+  },
+  "528913": {
+    "brand": "Mastercard",
+    "type": "Credit",
+    "category": "Gold",
+    "country": "United States",
+    "bank": "Wells Fargo"
+  },
+  "440393": {
+    "brand": "Visa",
+    "type": "Debit",
+    "category": "Classic",
+    "country": "United States",
+    "bank": "Chase Bank"
+  },
+  "371449": {
+    "brand": "American Express",
+    "type": "Credit",
+    "category": "Platinum",
+    "country": "United States",
+    "bank": "American Express"
+  },
+  "601111": {
+    "brand": "Discover",
+    "type": "Credit",
+    "category": "Standard",
+    "country": "United States",
+    "bank": "Discover Bank"
+  },
+  "422222": {
+    "brand": "Visa",
+    "type": "Credit",
+    "category": "Gold",
+    "country": "United Kingdom",
+    "bank": "Barclays"
+  },
+  "510000": {
+    "brand": "Mastercard",
+    "type": "Credit",
+    "category": "Platinum",
+    "country": "Canada",
+    "bank": "Royal Bank of Canada"
+  },
+  "432123": {
+    "brand": "Visa",
+    "type": "Debit",
+    "category": "Standard",
+    "country": "Australia",
+    "bank": "Commonwealth Bank"
+  },
+  "521234": {
+    "brand": "Mastercard",
+    "type": "Debit",
+    "category": "Standard",
+    "country": "Germany",
+    "bank": "Deutsche Bank"
+  },
+  "378282": {
+    "brand": "American Express",
+    "type": "Credit",
+    "category": "Gold",
+    "country": "United States",
+    "bank": "American Express"
+  },
+  "620000": {
+    "brand": "Discover",
+    "type": "Credit",
+    "category": "Platinum",
+    "country": "United States",
+    "bank": "Discover Bank"
+  },
+  "357111": {
+    "brand": "JCB",
+    "type": "Credit",
+    "category": "Standard",
+    "country": "Japan",
+    "bank": "JCB Bank"
+  },
+  "400000": {
+    "brand": "Visa",
+    "type": "Credit",
+    "category": "Electron",
+    "country": "United States",
+    "bank": "US Bank"
+  },
+  "675900": {
+    "brand": "Maestro",
+    "type": "Debit",
+    "category": "Standard",
+    "country": "United Kingdom",
+    "bank": "HSBC"
+  },
+  "500000": {
+    "brand": "Mastercard",
+    "type": "Credit",
+    "category": "Standard",
+    "country": "United States",
+    "bank": "Bank of America"
+  },
+  "471111": {
+    "brand": "Visa",
+    "type": "Debit",
+    "category": "Business",
+    "country": "France",
+    "bank": "BNP Paribas"
+  }
+}
