@@ -591,6 +591,62 @@ async def buy_command(update: Update, context: CallbackContext) -> None:
     )
 
 @require_registration
+async def process_payment(query, plan: str, user_id: int) -> None:
+    """
+    Process payment for premium subscription and generate payment link.
+    
+    Args:
+        query: Callback query
+        plan: Subscription plan (basic, silver, gold, platinum)
+        user_id: User ID
+    """
+    import os
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    import uuid
+    
+    # Define plan details
+    plan_details = {
+        "basic": {"name": "Basic Tier", "duration": 1, "price": 9.99, "price_id": "price_basic"},
+        "silver": {"name": "Silver Tier", "duration": 3, "price": 24.99, "price_id": "price_silver"},
+        "gold": {"name": "Gold Tier", "duration": 6, "price": 44.99, "price_id": "price_gold"},
+        "platinum": {"name": "Platinum Tier", "duration": 12, "price": 79.99, "price_id": "price_platinum"}
+    }
+    
+    if plan not in plan_details:
+        await query.message.reply_text("Invalid subscription plan selected.")
+        return
+    
+    # Get plan information
+    selected_plan = plan_details[plan]
+    
+    # Generate a unique reference ID for this transaction
+    reference_id = str(uuid.uuid4())[:8]
+    
+    # Get the host domain
+    host_domain = os.environ.get('REPLIT_DOMAINS', '').split(',')[0] if os.environ.get('REPLIT_DOMAINS') else os.environ.get('REPLIT_DOMAIN', 'localhost:5000')
+    
+    # Prepare payment URL with bot ID and selected plan
+    payment_url = f"https://{host_domain}/create-checkout-session?plan={plan}&user_id={user_id}&ref={reference_id}"
+    
+    # Create payment message with plan details
+    message = (
+        f"🛒 {selected_plan['name']} Subscription\n\n"
+        f"💲 Price: ${selected_plan['price']}\n"
+        f"⏱️ Duration: {selected_plan['duration']} {'month' if selected_plan['duration'] == 1 else 'months'}\n"
+        f"🔑 Reference: {reference_id}\n\n"
+        f"Click the button below to complete your payment securely with Stripe.\n"
+        f"After payment, your premium status will be activated automatically."
+    )
+    
+    # Create payment button
+    keyboard = [
+        [InlineKeyboardButton("💳 Pay Now", url=payment_url)],
+        [InlineKeyboardButton("❌ Cancel", callback_data="back")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(message, reply_markup=reply_markup)
+
 async def ping_command(update: Update, context: CallbackContext) -> None:
     """Handle the /ping command to check bot status."""
     await update.message.reply_text(
