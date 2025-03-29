@@ -4,9 +4,12 @@ Main entry point for the HUMBL3 CH3CK4R Telegram Bot.
 """
 import os
 import logging
-import asyncio
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler
+from telegram.ext import Updater
 from bot import setup_bot
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -15,7 +18,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-async def main():
+def main():
     """Start the bot."""
     # Get the Telegram token from environment variables
     token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -23,15 +26,19 @@ async def main():
         logger.error("No TELEGRAM_BOT_TOKEN found in environment variables!")
         return
 
-    # Create the Application and pass it your bot's token
-    application = Application.builder().token(token).build()
+    # Create the Updater and pass it your bot's token
+    updater = Updater(token=token, use_context=True)
+    
+    # Get the dispatcher to register handlers
+    dispatcher = updater.dispatcher
     
     # Setup bot with all handlers
-    await setup_bot(application)
+    setup_bot(dispatcher)
     
     # Run the bot until the user presses Ctrl-C
     logger.info("Starting bot...")
-    await application.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    main()

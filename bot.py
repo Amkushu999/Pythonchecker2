@@ -6,7 +6,7 @@ from telegram.ext import (
     CommandHandler, 
     CallbackQueryHandler, 
     MessageHandler, 
-    filters
+    Filters
 )
 from handlers import (
     start_handler,
@@ -77,10 +77,10 @@ async def setup_bot(application):
     
     # Register all commands with both / and . prefixes
     for cmd, handler_func in command_mappings.items():
-        dispatcher.add_handler(CommandHandler(cmd, handler_func))
+        application.add_handler(CommandHandler(cmd, handler_func))
     
     # Handle country-specific fake address generation
-    def fake_address_handler(update, context):
+    async def fake_address_handler(update, context):
         text = update.message.text.strip().lower()
         country_code = "us"  # Default to US
         
@@ -90,60 +90,61 @@ async def setup_bot(application):
             if len(parts) > 1:
                 country_code = parts[1].upper()
         
-        return fake_us_command(update, context, country_code)
+        return await fake_us_command(update, context, country_code)
     
     # Add fake address handler with both prefixes
-    dispatcher.add_handler(CommandHandler("fake", fake_address_handler))
+    application.add_handler(CommandHandler("fake", fake_address_handler))
     
     # Support both / and . command prefixes for gateways
     for gateway in ["stripe", "adyen", "braintree", "b3", "vbv", "paypal", 
                     "authnet", "shopify", "worldpay", "checkout", "cybersource"]:
-        def gateway_handler(update, context, gateway_name=gateway):
-            return command_handler(update, context, gateway_name)
-        dispatcher.add_handler(CommandHandler(gateway, gateway_handler))
+        async def gateway_handler(update, context, gateway_name=gateway):
+            return await command_handler(update, context, gateway_name)
+        application.add_handler(CommandHandler(gateway, gateway_handler))
     
     # Callback query handler for inline buttons
-    dispatcher.add_handler(CallbackQueryHandler(start_handler, pattern="^start$"))
-    dispatcher.add_handler(CallbackQueryHandler(register_handler, pattern="^register$"))
-    dispatcher.add_handler(CallbackQueryHandler(lambda u, c: command_handler(u, c), pattern="^commands$"))
+    application.add_handler(CallbackQueryHandler(start_handler, pattern="^start$"))
+    application.add_handler(CallbackQueryHandler(register_handler, pattern="^register$"))
+    application.add_handler(CallbackQueryHandler(lambda u, c: asyncio.create_task(command_handler(u, c)), pattern="^commands$"))
     
     # Auth category handlers
-    dispatcher.add_handler(CallbackQueryHandler(lambda u, c: command_handler(u, c, "auth"), pattern="^AUTH/B3/VBV$"))
+    application.add_handler(CallbackQueryHandler(lambda u, c: asyncio.create_task(command_handler(u, c, "auth")), pattern="^AUTH/B3/VBV$"))
     
     # Charge category handler
-    dispatcher.add_handler(CallbackQueryHandler(lambda u, c: command_handler(u, c, "charge"), pattern="^CHARGE$"))
+    application.add_handler(CallbackQueryHandler(lambda u, c: asyncio.create_task(command_handler(u, c, "charge")), pattern="^CHARGE$"))
     
     # Tools category handler
-    dispatcher.add_handler(CallbackQueryHandler(lambda u, c: command_handler(u, c, "tools"), pattern="^TOOLS$"))
+    application.add_handler(CallbackQueryHandler(lambda u, c: asyncio.create_task(command_handler(u, c, "tools")), pattern="^TOOLS$"))
     
     # Helper category handler
-    dispatcher.add_handler(CallbackQueryHandler(lambda u, c: command_handler(u, c, "helper"), pattern="^HELPER$"))
+    application.add_handler(CallbackQueryHandler(lambda u, c: asyncio.create_task(command_handler(u, c, "helper")), pattern="^HELPER$"))
     
     # Gateway buttons (using the gateway names directly as patterns)
     for gateway in ["stripe", "adyen", "braintree_b3", "braintree_vbv", "paypal", 
                    "authnet", "shopify", "worldpay", "checkout", "cybersource"]:
-        dispatcher.add_handler(CallbackQueryHandler(lambda u, c, gw=gateway: command_handler(u, c, gw), pattern=f"^{gateway}$"))
+        application.add_handler(CallbackQueryHandler(lambda u, c, gw=gateway: asyncio.create_task(command_handler(u, c, gw)), pattern=f"^{gateway}$"))
     
     # Back button handler
-    dispatcher.add_handler(CallbackQueryHandler(lambda u, c: command_handler(u, c, "back"), pattern="^Back$"))
+    application.add_handler(CallbackQueryHandler(lambda u, c: asyncio.create_task(command_handler(u, c, "back")), pattern="^Back$"))
     
     # Close button handler
-    dispatcher.add_handler(CallbackQueryHandler(lambda u, c: u.callback_query.message.delete(), pattern="^Close$"))
+    application.add_handler(CallbackQueryHandler(lambda u, c: asyncio.create_task(u.callback_query.message.delete()), pattern="^Close$"))
     
     # Error handler for better user experience
-    dispatcher.add_error_handler(error_handler)
+    application.add_error_handler(error_handler)
     
     # Message handler for text messages (CC checking) - should be last
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, command_handler))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, command_handler))
     
     logger.info("Bot handlers have been set up successfully")
+    return application
 
-def error_handler(update, context):
+async def error_handler(update, context):
     """Handle errors gracefully."""
     logger.error(f"Update {update} caused error {context.error}")
     try:
         if update.effective_message:
-            update.effective_message.reply_text(
+            await update.effective_message.reply_text(
                 "Sorry, something went wrong processing your request. Please try again later."
             )
     except Exception as e:
