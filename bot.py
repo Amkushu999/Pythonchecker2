@@ -6,7 +6,7 @@ from telegram.ext import (
     CommandHandler, 
     CallbackQueryHandler, 
     MessageHandler, 
-    Filters
+    filters
 )
 from handlers import (
     start_handler,
@@ -39,47 +39,68 @@ from handlers.admin import (
 
 logger = logging.getLogger(__name__)
 
-def setup_bot(dispatcher):
+async def setup_bot(application):
     """
     Set up all command and message handlers for the bot.
     """
-    # Basic commands
-    dispatcher.add_handler(CommandHandler("start", start_command))
-    dispatcher.add_handler(CommandHandler("commands", commands_command))
-    dispatcher.add_handler(CommandHandler("register", register_command))
-    dispatcher.add_handler(CommandHandler("id", id_command))
-    dispatcher.add_handler(CommandHandler("info", info_command))
-    dispatcher.add_handler(CommandHandler("credits", credits_command))
-    dispatcher.add_handler(CommandHandler("buy", buy_command))
-    dispatcher.add_handler(CommandHandler("ping", ping_command))
-    dispatcher.add_handler(CommandHandler("howcrd", howcrd_command))
-    dispatcher.add_handler(CommandHandler("howpm", howpm_command))
-    dispatcher.add_handler(CommandHandler("howgp", howgp_command))
+    # Define all command handlers with their corresponding functions
+    command_mappings = {
+        # Basic commands
+        "start": start_command,
+        "commands": commands_command,
+        "register": register_command,
+        "id": id_command,
+        "info": info_command,
+        "credits": credits_command,
+        "buy": buy_command,
+        "ping": ping_command,
+        "howcrd": howcrd_command,
+        "howpm": howpm_command,
+        "howgp": howgp_command,
+        
+        # Generator tools
+        "gen": gen_command,
+        
+        # Scraper tools
+        "scr": scr_command,
+        "scrbin": scrbin_command,
+        "scrsk": scrsk_command,
+        
+        # Redeem code handler
+        "redeem": redeem_code_command,
+        
+        # Admin commands
+        "addcredits": add_credits_command,
+        "gencode": generate_redeem_code_command,
+        "broadcast": broadcast_command,
+    }
     
-    # Generator tools
-    dispatcher.add_handler(CommandHandler("gen", gen_command))
-    dispatcher.add_handler(CommandHandler("fakeus", fake_us_command))
+    # Register all commands with both / and . prefixes
+    for cmd, handler_func in command_mappings.items():
+        dispatcher.add_handler(CommandHandler(cmd, handler_func))
     
-    # Scraper tools
-    dispatcher.add_handler(CommandHandler("scr", scr_command))
-    dispatcher.add_handler(CommandHandler("scrbin", scrbin_command))
-    dispatcher.add_handler(CommandHandler("scrsk", scrsk_command))
+    # Handle country-specific fake address generation
+    def fake_address_handler(update, context):
+        text = update.message.text.strip().lower()
+        country_code = "us"  # Default to US
+        
+        # Extract country code from command
+        if text.startswith(("/fake ", ".fake ")):
+            parts = text.split()
+            if len(parts) > 1:
+                country_code = parts[1].upper()
+        
+        return fake_us_command(update, context, country_code)
     
-    # Redeem code handler
-    dispatcher.add_handler(CommandHandler("redeem", redeem_code_command))
+    # Add fake address handler with both prefixes
+    dispatcher.add_handler(CommandHandler("fake", fake_address_handler))
     
-    # Admin commands
-    dispatcher.add_handler(CommandHandler("addcredits", add_credits_command))
-    dispatcher.add_handler(CommandHandler("gencode", generate_redeem_code_command))
-    dispatcher.add_handler(CommandHandler("broadcast", broadcast_command))
-    
-    # Support both / and . command prefixes
-    for prefix in ["/", "."]:
-        for gateway in ["stripe", "adyen", "braintree", "b3", "vbv", "paypal", 
-                        "authnet", "shopify", "worldpay", "checkout", "cybersource"]:
-            def gateway_handler(update, context, gateway_name=gateway):
-                return command_handler(update, context, gateway_name)
-            dispatcher.add_handler(CommandHandler(gateway, gateway_handler))
+    # Support both / and . command prefixes for gateways
+    for gateway in ["stripe", "adyen", "braintree", "b3", "vbv", "paypal", 
+                    "authnet", "shopify", "worldpay", "checkout", "cybersource"]:
+        def gateway_handler(update, context, gateway_name=gateway):
+            return command_handler(update, context, gateway_name)
+        dispatcher.add_handler(CommandHandler(gateway, gateway_handler))
     
     # Callback query handler for inline buttons
     dispatcher.add_handler(CallbackQueryHandler(start_handler, pattern="^start$"))

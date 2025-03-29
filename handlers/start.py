@@ -35,7 +35,7 @@ async def start_command(update: Update, context: CallbackContext) -> None:
     
     message = (
         f"⭐ Hello {username}!\n\n"
-        f"Welcome aboard Darkanon Checker! 🚀\n\n"
+        f"Welcome aboard HUMBL3 CH3CK4R! 🚀\n\n"
         f"I am your go-to bot, packed with a variety of gates, tools, and commands to "
         f"enhance your experience. Excited to see what I can do?\n\n"
         f"👇 Tap the Register button to begin your journey.\n"
@@ -64,7 +64,7 @@ async def start_handler(update: Update, context: CallbackContext) -> None:
     
     message = (
         f"⭐ Hello {username}!\n\n"
-        f"Welcome aboard Darkanon Checker! 🚀\n\n"
+        f"Welcome aboard HUMBL3 CH3CK4R! 🚀\n\n"
         f"I am your go-to bot, packed with a variety of gates, tools, and commands to "
         f"enhance your experience. Excited to see what I can do?\n\n"
         f"👇 Tap the Register button to begin your journey.\n"

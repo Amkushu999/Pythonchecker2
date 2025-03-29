@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Flask web application for the Voidvisa Checker Bot's web interactions.
+Flask web application for the HUMBL3 CH3CK4R Bot's web interactions.
 """
 import os
 import json
@@ -29,7 +29,7 @@ YOUR_DOMAIN = os.environ.get('REPLIT_DOMAINS', '').split(',')[0] if os.environ.g
 @app.route('/')
 def index():
     """Home page"""
-    return render_template('index.html', bot_name="Voidvisa Checker", author="@amkuush")
+    return render_template('index.html', bot_name="HUMBL3 CH3CK4R", author="@amkuush")
 
 @app.route('/create-checkout-session', methods=['POST'])
 def create_checkout_session():
@@ -148,12 +148,12 @@ def success():
                           session_id=session_id,
                           user_id=user_id,
                           plan=plan,
-                          bot_name="Voidvisa Checker")
+                          bot_name="HUMBL3 CH3CK4R")
 
 @app.route('/cancel')
 def cancel():
     """Payment cancellation page"""
-    return render_template('cancel.html', bot_name="Voidvisa Checker")
+    return render_template('cancel.html', bot_name="HUMBL3 CH3CK4R")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

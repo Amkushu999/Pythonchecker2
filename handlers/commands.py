@@ -65,7 +65,7 @@ async def commands_command(update: Update, context: CallbackContext) -> None:
     
     message = (
         f"Hello User!\n\n"
-        f"Darkanon Checker Has plenty of Commands. We Have Auth Gates, "
+        f"HUMBL3 CH3CK4R Checker Has plenty of Commands. We Have Auth Gates, "
         f"Charge Gates, Tools, And Other Things.\n\n"
         f"Click Each of Them Below to Know Them Better."
     )
@@ -164,7 +164,7 @@ async def commands_handler(query) -> None:
     
     message = (
         f"Hello User!\n\n"
-        f"Darkanon Checker Has plenty of Commands. We Have Auth Gates, "
+        f"HUMBL3 CH3CK4R Checker Has plenty of Commands. We Have Auth Gates, "
         f"Charge Gates, Tools, And Other Things.\n\n"
         f"Click Each of Them Below to Know Them Better."
     )
@@ -195,7 +195,7 @@ async def show_auth_gates(query) -> None:
     
     message = (
         f"Hello User!\n\n"
-        f"Darkanon Auth Gates.\n\n"
+        f"HUMBL3 CH3CK4R Auth Gates.\n\n"
         f"Click on each of them below to get to know them better."
     )
     
@@ -225,7 +225,7 @@ async def show_charge_gates(query) -> None:
     
     message = (
         f"Hello User!\n\n"
-        f"Darkanon Charge Gates.\n\n"
+        f"HUMBL3 CH3CK4R Charge Gates.\n\n"
         f"Click on each of them below to get to know them better."
     )
     
@@ -234,7 +234,7 @@ async def show_charge_gates(query) -> None:
 async def show_tools(query) -> None:
     """Show available tools."""
     message = (
-        f"♦️ Generator Tools of Darkanon\n"
+        f"♦️ Generator Tools of HUMBL3 CH3CK4R\n"
         f"♦️ Status: ✅ Active\n\n"
         f"🚀 Quick Commands Overview:\n\n"
         f"👤 Generator Tools:\n"
@@ -256,7 +256,7 @@ async def show_tools(query) -> None:
 async def show_helper(query) -> None:
     """Show helper commands."""
     message = (
-        f"♦️ Helper Gates of Darkanon\n"
+        f"♦️ Helper Gates of HUMBL3 CH3CK4R\n"
         f"♦️ Status: ✅ Active\n\n"
         f"🚀 Quick Commands Overview:\n\n"
         f"👤 Account Management:\n"
@@ -396,17 +396,64 @@ async def check_with_gateway(update: Update, context: CallbackContext, gateway: 
             await update.message.reply_text(message)
 
 def format_check_response(cc: str, month: str, year: str, cvv: str, result: Dict, gateway: str) -> str:
-    """Format the response from a card check."""
+    """
+    Format the response from a card check with proper formatting and emojis.
+    
+    Args:
+        cc: Credit card number
+        month: Expiry month
+        year: Expiry year
+        cvv: CVV code
+        result: Check result dictionary
+        gateway: Gateway name
+        
+    Returns:
+        Formatted response string with emoji indicators
+    """
     success = result.get("success", False)
     message = result.get("message", "Unknown result")
     
+    # Define status emoji based on result
+    status_emoji = "✅" if success else "❌"
+    risk_level = result.get("risk_level", "Unknown")
+    risk_emoji = {
+        "Low": "🟢",
+        "Medium": "🟡",
+        "High": "🔴",
+        "Unknown": "⚪"
+    }.get(risk_level, "⚪")
+    
+    # Format BIN details
+    bin_digits = cc[:6]
+    
+    # Determine card brand icon
+    card_brand = "Unknown"
+    if "bin_info" in result:
+        card_brand = result["bin_info"].get("brand", "Unknown")
+    
+    brand_emoji = {
+        "Visa": "💳",
+        "Mastercard": "💳",
+        "American Express": "💳",
+        "Discover": "💳", 
+        "JCB": "💳",
+        "Diners Club": "💳",
+        "UnionPay": "💳",
+        "Unknown": "💳"
+    }.get(card_brand, "💳")
+    
+    # Build nicely formatted header with result banner
+    header = f"{'=' * 35}\n"
+    header += f"  {brand_emoji} CARD CHECK RESULT: {status_emoji} {'APPROVED' if success else 'DECLINED'}\n"
+    header += f"{'=' * 35}\n\n"
+    
     # Base response format
-    response = (
+    response = header + (
         f"💳 Card: {cc[:6]}xxxxxx{cc[-4:]}\n"
         f"📆 Expiry: {month}/{year}\n"
         f"🔒 CVV: {cvv}\n"
         f"🔄 Gateway: {gateway.upper()}\n"
-        f"✅ Status: {'APPROVED' if success else 'DECLINED'}\n"
+        f"{status_emoji} Status: {'APPROVED' if success else 'DECLINED'}\n"
         f"📝 Message: {message}\n\n"
     )
     
@@ -414,13 +461,30 @@ def format_check_response(cc: str, month: str, year: str, cvv: str, result: Dict
     if "bin_info" in result:
         bin_info = result["bin_info"]
         response += (
+            f"📊 BIN INFORMATION:\n"
+            f"➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
             f"🏛️ Bank: {bin_info.get('bank', 'Unknown')}\n"
             f"🌍 Country: {bin_info.get('country', 'Unknown')}\n"
             f"💳 Type: {bin_info.get('type', 'Unknown')}\n"
             f"🏷️ Brand: {bin_info.get('brand', 'Unknown')}\n"
+            f"🔰 Category: {bin_info.get('category', 'Unknown')}\n"
         )
     
-    return response
+    # Add timestamps and unique check ID
+    import time
+    import uuid
+    
+    check_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+    check_id = str(uuid.uuid4())[:8]
+    
+    footer = (
+        f"\n🕒 Checked at: {check_time}\n"
+        f"🔑 Check ID: {check_id}\n"
+        f"🤖 Checker: VOIDVISA by @amkuush\n"
+        f"{'=' * 35}"
+    )
+    
+    return response + footer
 
 @require_registration
 async def id_command(update: Update, context: CallbackContext) -> None:
@@ -571,23 +635,30 @@ async def gen_command(update: Update, context: CallbackContext) -> None:
 
 @require_registration
 @require_credits(1)
-async def fake_us_command(update: Update, context: CallbackContext) -> None:
-    """Handle the /fakeus command to generate a fake US address."""
+async def fake_us_command(update: Update, context: CallbackContext, country_code: str = "US") -> None:
+    """
+    Handle the /fake command to generate a fake address for the specified country.
+    
+    Args:
+        update: Update object
+        context: CallbackContext object
+        country_code: Two-letter country code (e.g., US, UK, CA, etc.)
+    """
     user_id = update.effective_user.id
     
     # Use 1 credit
     db.use_credits(user_id, 1)
     
-    # Generate fake address
-    address = generate_fake_address()
+    # Generate fake address for the specified country
+    address = generate_fake_address(country_code)
     
     response = (
-        f"📍 Fake US Address:\n\n"
+        f"📍 Fake {address['country']} Address:\n\n"
         f"👤 Name: {address['name']}\n"
         f"🏠 Address: {address['street']}\n"
         f"🏙️ City: {address['city']}\n"
-        f"🏛️ State: {address['state']}\n"
-        f"📮 ZIP: {address['zip']}\n"
+        f"🏛️ State/Region: {address['state']}\n"
+        f"📮 ZIP/Postal Code: {address['zip']}\n"
         f"📱 Phone: {address['phone']}\n"
         f"📧 Email: {address['email']}"
     )
