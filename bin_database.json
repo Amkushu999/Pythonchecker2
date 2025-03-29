@@ -291,7 +291,7 @@
   },
   "489571": {
     "bin": "489571",
-    "bank": "Caixa Geral de Depósitos",
+    "bank": "Caixa Geral de Dep\u00f3sitos",
     "country": "Portugal",
     "country_code": "PT",
     "type": "Credit",
@@ -371,7 +371,7 @@
   },
   "409312": {
     "bin": "409312",
-    "bank": "Itaú Unibanco",
+    "bank": "Ita\u00fa Unibanco",
     "country": "Brazil",
     "country_code": "BR",
     "type": "Credit",
@@ -401,7 +401,7 @@
   },
   "547116": {
     "bin": "547116",
-    "bank": "Banco Nacional de México (Banamex)",
+    "bank": "Banco Nacional de M\u00e9xico (Banamex)",
     "country": "Mexico",
     "country_code": "MX",
     "type": "Credit",
