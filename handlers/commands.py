@@ -99,6 +99,19 @@ async def command_handler(update: Update, context: CallbackContext, command_type
             # Go back to main commands menu
             await commands_handler(query)
             return
+        elif command_type and command_type.startswith("buy_"):
+            # Handle buy callback - format is buy_[plan]_[user_id]
+            parts = command_type.split('_')
+            if len(parts) >= 3:
+                plan = parts[1]  # basic, silver, gold, platinum
+                user_id = int(parts[2])  # Ensure it's the same user
+                
+                if user_id == update.effective_user.id:
+                    # Process payment request
+                    await process_payment(query, plan, user_id)
+                else:
+                    await query.message.reply_text("You cannot use someone else's payment button.")
+            return
         elif command_type in GATEWAYS:
             # Show instructions for specific gateway
             await show_gateway_instructions(query, command_type)
@@ -556,30 +569,24 @@ async def buy_command(update: Update, context: CallbackContext) -> None:
     
     keyboard = [
         [
-            InlineKeyboardButton("1 Week ($10)", callback_data=f"buy_weekly_{user_id}"),
+            InlineKeyboardButton("💠 Basic Tier (1 month)", callback_data=f"buy_basic_{user_id}"),
         ],
         [
-            InlineKeyboardButton("1 Month ($30)", callback_data=f"buy_monthly_{user_id}"),
+            InlineKeyboardButton("🔶 Silver Tier (3 months)", callback_data=f"buy_silver_{user_id}"),
         ],
         [
-            InlineKeyboardButton("Lifetime ($100)", callback_data=f"buy_lifetime_{user_id}"),
+            InlineKeyboardButton("🌟 Gold Tier (6 months)", callback_data=f"buy_gold_{user_id}"),
+        ],
+        [
+            InlineKeyboardButton("💎 Platinum Tier (12 months)", callback_data=f"buy_platinum_{user_id}"),
         ]
     ]
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        f"💎 Premium Subscription Options:\n\n"
-        f"• 1 Week Premium: $10\n"
-        f"• 1 Month Premium: $30\n"
-        f"• Lifetime Premium: $100\n\n"
-        f"Benefits:\n"
-        f"✅ Unlimited CC checks\n"
-        f"✅ Access to all gateways\n"
-        f"✅ Higher rate limits\n"
-        f"✅ Priority support\n"
-        f"✅ Advanced BIN lookup\n\n"
-        f"Select a plan to continue:",
+        f"❗ Choose what suits best for your needs.\n"
+        f"For more details about Premium, type /help command.\n\n",
         reply_markup=reply_markup
     )
 

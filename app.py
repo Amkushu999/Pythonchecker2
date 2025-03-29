@@ -45,6 +45,11 @@ def create_checkout_session():
         
         # Define prices based on plan
         prices = {
+            "basic": {"price": 3000, "description": "Basic Tier (1 month)"},
+            "silver": {"price": 7500, "description": "Silver Tier (3 months)"},
+            "gold": {"price": 12000, "description": "Gold Tier (6 months)"},
+            "platinum": {"price": 20000, "description": "Platinum Tier (12 months)"},
+            # Keep backwards compatibility with older plans
             "weekly": {"price": 1000, "description": "1 Week Premium Access"},
             "monthly": {"price": 3000, "description": "1 Month Premium Access"},
             "lifetime": {"price": 10000, "description": "Lifetime Premium Access"}
@@ -119,11 +124,23 @@ def webhook():
                 db = Database()
                 
                 # Calculate premium duration based on plan
-                premium_days = {
-                    "weekly": 7,
-                    "monthly": 30,
-                    "lifetime": 36500  # ~100 years
-                }.get(plan, 0)
+                premium_duration = None
+                if plan == "basic":  # Basic Tier (1 month)
+                    premium_days = 30
+                elif plan == "silver":  # Silver Tier (3 months)
+                    premium_days = 90
+                elif plan == "gold":  # Gold Tier (6 months)
+                    premium_days = 180
+                elif plan == "platinum":  # Platinum Tier (12 months)
+                    premium_days = 365
+                elif plan == "weekly":  # Backwards compatibility
+                    premium_days = 7
+                elif plan == "monthly":  # Backwards compatibility
+                    premium_days = 30
+                elif plan == "lifetime":  # Backwards compatibility
+                    premium_days = 36500  # ~100 years
+                else:
+                    premium_days = 0
                 
                 # Update user status
                 if premium_days > 0:
