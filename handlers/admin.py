@@ -28,6 +28,8 @@ async def admin_handler(update: Update, context: CallbackContext, command: str) 
     # Handle specific admin commands
     if command == "addcredits":
         await add_credits_command(update, context)
+    elif command == "addpremium":
+        await add_premium_command(update, context)
     elif command == "gencode":
         await generate_redeem_code_command(update, context)
     elif command == "broadcast":
@@ -330,6 +332,53 @@ async def unlock_command(update: Update, context: CallbackContext) -> None:
         "🔓 System is now globally unlocked. All users can use the bot."
     )
 
+async def add_premium_command(update: Update, context: CallbackContext) -> None:
+    """Handle the /addpremium command to give premium status to a user."""
+    user_id = update.effective_user.id
+    
+    # Check if user is an admin
+    if user_id not in ADMIN_USER_IDS:
+        await update.message.reply_text("You are not authorized to use this command.")
+        return
+    
+    # Parse arguments
+    if not context.args or len(context.args) < 2:
+        await update.message.reply_text(
+            "Usage: /addpremium USER_ID DAYS\n"
+            "Example: /addpremium 123456789 30"
+        )
+        return
+    
+    try:
+        target_user_id = int(context.args[0])
+        days = int(context.args[1])
+        
+        # Check if user exists
+        if not db.user_exists(target_user_id):
+            await update.message.reply_text(f"User {target_user_id} does not exist.")
+            return
+        
+        # Add premium status
+        import time
+        expiry = int(time.time()) + (days * 24 * 60 * 60)
+        db.set_premium(target_user_id, expiry)
+        
+        # Calculate expiry date in readable format
+        from datetime import datetime
+        expiry_date = datetime.fromtimestamp(expiry).strftime('%Y-%m-%d %H:%M:%S')
+        
+        await update.message.reply_text(
+            f"✅ Successfully added premium status to user {target_user_id}.\n"
+            f"Duration: {days} days\n"
+            f"Expires on: {expiry_date}"
+        )
+    
+    except ValueError:
+        await update.message.reply_text("Invalid arguments. Please provide a valid user ID and number of days.")
+    except Exception as e:
+        logger.error(f"Error adding premium status: {e}")
+        await update.message.reply_text("An error occurred. Please try again.")
+
 async def maintenance_command(update: Update, context: CallbackContext) -> None:
     """Handle the /maintenance command to toggle maintenance mode."""
     user_id = update.effective_user.id
@@ -560,6 +609,7 @@ async def admin_help_command(update: Update, context: CallbackContext) -> None:
         "🔑 Admin Commands:\n\n"
         "User Management:\n"
         "• /addcredits USER_ID AMOUNT - Add credits to a user\n"
+        "• /addpremium USER_ID DAYS - Add premium status to a user\n"
         "• /ban USER_ID REASON - Ban a user\n"
         "• /unban USER_ID - Unban a user\n"
         "• /banlist - List all banned users\n\n"

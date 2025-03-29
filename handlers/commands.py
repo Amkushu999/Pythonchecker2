@@ -52,22 +52,18 @@ async def commands_command(update: Update, context: CallbackContext) -> None:
     """Handle the /commands command."""
     keyboard = [
         [
-            InlineKeyboardButton("AUTH/B3/VBV", callback_data="AUTH/B3/VBV"),
-            InlineKeyboardButton("CHARGE", callback_data="CHARGE")
+            InlineKeyboardButton("Commands", callback_data="commands")
         ],
         [
-            InlineKeyboardButton("TOOLS", callback_data="TOOLS"),
-            InlineKeyboardButton("HELPER", callback_data="HELPER")
-        ],
-        [InlineKeyboardButton("Close", callback_data="Close")]
+            InlineKeyboardButton("Close", callback_data="Close")
+        ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"Hello User!\n\n"
-        f"HUMBL3 CH3CK4R Checker Has plenty of Commands. We Have Auth Gates, "
-        f"Charge Gates, Tools, And Other Things.\n\n"
-        f"Click Each of Them Below to Know Them Better."
+        f"💠 HUMBL3 CH3CK4R\n"
+        f"💠 Hello {update.effective_user.first_name}! Welcome aboard...\n\n"
+        f"Explore My Various Commands And Abilities By Tapping on Commands Button"
     )
     
     await update.message.reply_text(message, reply_markup=reply_markup)
@@ -171,15 +167,19 @@ async def commands_handler(query) -> None:
             InlineKeyboardButton("TOOLS", callback_data="TOOLS"),
             InlineKeyboardButton("HELPER", callback_data="HELPER")
         ],
+        [InlineKeyboardButton("Back", callback_data="back")],
         [InlineKeyboardButton("Close", callback_data="Close")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"Hello User!\n\n"
-        f"HUMBL3 CH3CK4R Checker Has plenty of Commands. We Have Auth Gates, "
-        f"Charge Gates, Tools, And Other Things.\n\n"
-        f"Click Each of Them Below to Know Them Better."
+        f"💠 HUMBL3 CH3CK4R Commands Center\n\n"
+        f"Explore the various command categories below:\n\n"
+        f"1. AUTH/B3/VBV - Authentication gateways\n"
+        f"2. CHARGE - Charge gateways\n"
+        f"3. TOOLS - Utility tools\n"
+        f"4. HELPER - Help commands\n\n"
+        f"Select a category to view available commands."
     )
     
     await query.edit_message_text(message, reply_markup=reply_markup)
@@ -200,6 +200,14 @@ async def show_auth_gates(query) -> None:
             InlineKeyboardButton("AuthNet Auth", callback_data="authnet")
         ],
         [
+            InlineKeyboardButton("Klarna Auth", callback_data="klarna"),
+            InlineKeyboardButton("Mollie Auth", callback_data="mollie")
+        ],
+        [
+            InlineKeyboardButton("MercadoPago", callback_data="mercadopago"),
+            InlineKeyboardButton("Adyen Test", callback_data="adyen_test")
+        ],
+        [
             InlineKeyboardButton("Back", callback_data="Back"),
             InlineKeyboardButton("Close", callback_data="Close")
         ]
@@ -207,9 +215,15 @@ async def show_auth_gates(query) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"Hello User!\n\n"
-        f"HUMBL3 CH3CK4R Auth Gates.\n\n"
-        f"Click on each of them below to get to know them better."
+        f"🔹 STRIPE AUTH GATES of HUMBL3 CH3CK4R\n"
+        f"🔹 Status: ✅ Active\n\n"
+        f"🚀 Quick Commands Overview:\n\n"
+        f"👤 Stripe Auth Options:\n"
+        f"1. Stripe Auth: /au cc|mm|yy|cvv ✅\n"
+        f"→ Single: /au cc|mm|yy|cvv ✅\n"
+        f"→ Mass: /mass cc|mm|yy|cvv ✅\n\n"
+        f"Total Auth Commands: 1\n\n"
+        f"Select a gateway button to check cards with that gateway."
     )
     
     await query.edit_message_text(message, reply_markup=reply_markup)
@@ -230,6 +244,14 @@ async def show_charge_gates(query) -> None:
             InlineKeyboardButton("AuthNet", callback_data="authnet")
         ],
         [
+            InlineKeyboardButton("Square", callback_data="square"),
+            InlineKeyboardButton("Razorpay", callback_data="razorpay")
+        ],
+        [
+            InlineKeyboardButton("PaySafe", callback_data="paysafe"),
+            InlineKeyboardButton("PayU", callback_data="payu")
+        ],
+        [
             InlineKeyboardButton("Back", callback_data="Back"),
             InlineKeyboardButton("Close", callback_data="Close")
         ]
@@ -237,9 +259,16 @@ async def show_charge_gates(query) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"Hello User!\n\n"
-        f"HUMBL3 CH3CK4R Charge Gates.\n\n"
-        f"Click on each of them below to get to know them better."
+        f"🔹 CHARGE GATES of HUMBL3 CH3CK4R\n"
+        f"🔹 Status: ✅ Active\n\n"
+        f"🚀 Quick Commands Overview:\n\n"
+        f"👤 Charge Auth Options:\n"
+        f"1. Stripe Charge: /charge cc|mm|yy|cvv ✅\n"
+        f"2. Shopify Charge: /shopify cc|mm|yy|cvv ✅\n"
+        f"3. WorldPay Charge: /worldpay cc|mm|yy|cvv ✅\n"
+        f"4. CyberSource Charge: /cybersource cc|mm|yy|cvv ✅\n\n"
+        f"Total Charge Commands: 4\n\n"
+        f"Select a gateway button to check cards with that gateway."
     )
     
     await query.edit_message_text(message, reply_markup=reply_markup)
@@ -564,52 +593,91 @@ async def buy_command(update: Update, context: CallbackContext) -> None:
     
     user_id = update.effective_user.id
     
-    # Get the host domain
-    host_domain = os.environ.get('REPLIT_DOMAINS', '').split(',')[0] if os.environ.get('REPLIT_DOMAINS') else 'localhost:5000'
+    # Define plan details
+    plan_details = {
+        "basic": {"name": "Basic Tier", "duration": 1, "price": 9.99},
+        "silver": {"name": "Silver Tier", "duration": 3, "price": 24.99},
+        "gold": {"name": "Gold Tier", "duration": 6, "price": 44.99},
+        "platinum": {"name": "Platinum Tier", "duration": 12, "price": 79.99}
+    }
     
+    # Create premium plans message
+    message = (
+        f"💎 <b>HUMBL3 CH3CK4R Premium Plans</b> 💎\n\n"
+        f"Choose a plan that suits your needs:\n\n"
+        f"💠 <b>Basic Tier (1 month)</b>\n"
+        f"Price: ${plan_details['basic']['price']}\n"
+        f"• Unlimited private checks\n"
+        f"• All gateways access\n"
+        f"• Priority support\n\n"
+        
+        f"🔶 <b>Silver Tier (3 months)</b>\n"
+        f"Price: ${plan_details['silver']['price']}\n"
+        f"• Unlimited private checks\n"
+        f"• All gateways access\n"
+        f"• Priority support\n"
+        f"• Save 15% vs monthly\n\n"
+        
+        f"🌟 <b>Gold Tier (6 months)</b>\n"
+        f"Price: ${plan_details['gold']['price']}\n"
+        f"• Unlimited private checks\n"
+        f"• All gateways access\n"
+        f"• Priority support\n"
+        f"• Save 25% vs monthly\n\n"
+        
+        f"💎 <b>Platinum Tier (12 months)</b>\n"
+        f"Price: ${plan_details['platinum']['price']}\n"
+        f"• Unlimited private checks\n"
+        f"• All gateways access\n"
+        f"• Priority support\n"
+        f"• Save 33% vs monthly\n"
+        f"• Early access to new features\n\n"
+        
+        f"To purchase a premium plan, click the button below:"
+    )
+    
+    # Get admin username from config
+    from config import ADMIN_USERNAME
+    
+    # Create contact button
     keyboard = [
         [
-            InlineKeyboardButton("💠 Basic Tier (1 month)", callback_data=f"buy_basic_{user_id}"),
+            InlineKeyboardButton("💠 Basic (1 month)", callback_data=f"buy_basic_{user_id}"),
+            InlineKeyboardButton("🔶 Silver (3 months)", callback_data=f"buy_silver_{user_id}"),
         ],
         [
-            InlineKeyboardButton("🔶 Silver Tier (3 months)", callback_data=f"buy_silver_{user_id}"),
-        ],
-        [
-            InlineKeyboardButton("🌟 Gold Tier (6 months)", callback_data=f"buy_gold_{user_id}"),
-        ],
-        [
-            InlineKeyboardButton("💎 Platinum Tier (12 months)", callback_data=f"buy_platinum_{user_id}"),
+            InlineKeyboardButton("🌟 Gold (6 months)", callback_data=f"buy_gold_{user_id}"),
+            InlineKeyboardButton("💎 Platinum (12 months)", callback_data=f"buy_platinum_{user_id}"),
         ]
     ]
     
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     await update.message.reply_text(
-        f"❗ Choose what suits best for your needs.\n"
-        f"For more details about Premium, type /help command.\n\n",
-        reply_markup=reply_markup
+        message,
+        reply_markup=reply_markup,
+        parse_mode="HTML"
     )
 
 @require_registration
 async def process_payment(query, plan: str, user_id: int) -> None:
     """
-    Process payment for premium subscription and generate payment link.
+    Process payment for premium subscription by directing users to contact the admin.
     
     Args:
         query: Callback query
         plan: Subscription plan (basic, silver, gold, platinum)
         user_id: User ID
     """
-    import os
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
     import uuid
     
     # Define plan details
     plan_details = {
-        "basic": {"name": "Basic Tier", "duration": 1, "price": 9.99, "price_id": "price_basic"},
-        "silver": {"name": "Silver Tier", "duration": 3, "price": 24.99, "price_id": "price_silver"},
-        "gold": {"name": "Gold Tier", "duration": 6, "price": 44.99, "price_id": "price_gold"},
-        "platinum": {"name": "Platinum Tier", "duration": 12, "price": 79.99, "price_id": "price_platinum"}
+        "basic": {"name": "Basic Tier", "duration": 1, "price": 9.99},
+        "silver": {"name": "Silver Tier", "duration": 3, "price": 24.99},
+        "gold": {"name": "Gold Tier", "duration": 6, "price": 44.99},
+        "platinum": {"name": "Platinum Tier", "duration": 12, "price": 79.99}
     }
     
     if plan not in plan_details:
@@ -622,30 +690,32 @@ async def process_payment(query, plan: str, user_id: int) -> None:
     # Generate a unique reference ID for this transaction
     reference_id = str(uuid.uuid4())[:8]
     
-    # Get the host domain
-    host_domain = os.environ.get('REPLIT_DOMAINS', '').split(',')[0] if os.environ.get('REPLIT_DOMAINS') else os.environ.get('REPLIT_DOMAIN', 'localhost:5000')
+    # Get admin username from config
+    from config import ADMIN_USERNAME
     
-    # Prepare payment URL with bot ID and selected plan
-    payment_url = f"https://{host_domain}/create-checkout-session?plan={plan}&user_id={user_id}&ref={reference_id}"
-    
-    # Create payment message with plan details
+    # Create payment message with plan details and admin contact info
     message = (
-        f"🛒 {selected_plan['name']} Subscription\n\n"
-        f"💲 Price: ${selected_plan['price']}\n"
-        f"⏱️ Duration: {selected_plan['duration']} {'month' if selected_plan['duration'] == 1 else 'months'}\n"
-        f"🔑 Reference: {reference_id}\n\n"
-        f"Click the button below to complete your payment securely with Stripe.\n"
-        f"After payment, your premium status will be activated automatically."
+        f"🛒 <b>{selected_plan['name']} Subscription</b>\n\n"
+        f"💲 <b>Price:</b> ${selected_plan['price']}\n"
+        f"⏱️ <b>Duration:</b> {selected_plan['duration']} {'month' if selected_plan['duration'] == 1 else 'months'}\n"
+        f"🔑 <b>Reference:</b> {reference_id}\n\n"
+        f"<b>How to purchase:</b>\n"
+        f"1. Click the button below to message the admin directly\n"
+        f"2. Include the reference number and selected plan in your message\n"
+        f"3. The admin will provide payment instructions\n"
+        f"4. After payment confirmation, your premium status will be activated\n\n"
+        f"<i>Example message:</i>\n"
+        f"<code>I want to buy {selected_plan['name']} (Ref: {reference_id})</code>"
     )
     
-    # Create payment button
+    # Create contact admin button with hardcoded username per request
     keyboard = [
-        [InlineKeyboardButton("💳 Pay Now", url=payment_url)],
+        [InlineKeyboardButton("💬 Contact Admin", url=f"https://t.me/amkuush?start=buy_{plan}_{reference_id}")],
         [InlineKeyboardButton("❌ Cancel", callback_data="back")]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
-    await query.edit_message_text(message, reply_markup=reply_markup)
+    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode="HTML")
 
 async def ping_command(update: Update, context: CallbackContext) -> None:
     """Handle the /ping command to check bot status."""
@@ -661,17 +731,22 @@ async def gen_command(update: Update, context: CallbackContext) -> None:
     """Handle the /gen command to generate random CCs."""
     user_id = update.effective_user.id
     
-    # Parse arguments
-    if not context.args or len(context.args) < 2:
-        await update.message.reply_text(
-            "Usage: /gen BIN AMOUNT\n"
-            "Example: /gen 440393 5"
-        )
-        return
+    # Define valid bin prefixes for default generation
+    valid_bins = ["401234", "402345", "403456", "441234", "511234", "521234", "531234", "551234", "601234", "651234", "371234", "391234"]
     
     try:
-        bin_prefix = context.args[0]
-        amount = int(context.args[1])
+        # Default to 10 cards with random BINs if no arguments provided
+        if not context.args:
+            bin_prefix = ""
+            amount = 10
+        # If only one argument, treat it as the BIN and default to 10 cards
+        elif len(context.args) == 1:
+            bin_prefix = context.args[0]
+            amount = 10
+        # If both arguments provided
+        else:
+            bin_prefix = context.args[0]
+            amount = int(context.args[1])
         
         # Validate amount
         if amount < 1 or amount > 10:
@@ -683,11 +758,19 @@ async def gen_command(update: Update, context: CallbackContext) -> None:
         
         # Generate cards
         cards = []
-        for _ in range(amount):
-            card = generate_random_cc(bin_prefix)
-            cards.append(f"{card['cc']}|{card['month']}|{card['year']}|{card['cvv']}")
         
-        response = "Generated Cards:\n\n" + "\n".join(cards)
+        # If no BIN provided, use 10 different valid BINs
+        if not bin_prefix:
+            for i in range(min(amount, len(valid_bins))):
+                card = generate_random_cc(valid_bins[i])
+                cards.append(f"{card['cc']}|{card['month']}|{card['year']}|{card['cvv']}")
+        # Otherwise generate cards with the specified BIN
+        else:
+            for _ in range(amount):
+                card = generate_random_cc(bin_prefix)
+                cards.append(f"{card['cc']}|{card['month']}|{card['year']}|{card['cvv']}")
+        
+        response = "🔢 Generated Cards:\n\n" + "\n".join(cards)
         await update.message.reply_text(response)
     
     except ValueError:

@@ -4,9 +4,11 @@ Flask web application for the HUMBL3 CH3CK4R Bot's web interactions.
 """
 import os
 import json
+import time
+import uuid
 import logging
-from flask import Flask, request, jsonify, render_template, redirect, url_for
-import stripe
+import secrets
+from flask import Flask, request, jsonify, render_template, redirect, url_for, session
 
 # Configure logging
 logging.basicConfig(
@@ -17,11 +19,16 @@ logger = logging.getLogger(__name__)
 
 # Initialize Flask app
 app = Flask(__name__)
+app.secret_key = os.environ.get("SESSION_SECRET", secrets.token_hex(16))
 
-# Initialize Stripe
-stripe_api_key = os.getenv("STRIPE_SECRET_KEY", "")
-if stripe_api_key:
-    stripe.api_key = stripe_api_key
+# Custom filter for formatting Unix timestamps in templates
+@app.template_filter('strftime')
+def _jinja2_filter_datetime(unix_timestamp, format="%Y-%m-%d %H:%M:%S"):
+    """Convert a Unix timestamp to a formatted string."""
+    return time.strftime(format, time.localtime(unix_timestamp))
+
+# PayPal email for payments
+PAYPAL_EMAIL = "amkushu999@gmail.com"
 
 # Get domain for callbacks
 YOUR_DOMAIN = os.environ.get('REPLIT_DOMAINS', '').split(',')[0] if os.environ.get('REPLIT_DOMAINS') else 'localhost:5000'
@@ -33,7 +40,7 @@ def index():
 
 @app.route('/create-checkout-session', methods=['GET', 'POST'])
 def create_checkout_session():
-    """Create a Stripe checkout session for premium subscription purchase"""
+    """Redirect to Telegram admin for premium subscription purchase"""
     try:
         # Handle both GET and POST methods
         if request.method == 'POST':
@@ -51,131 +58,193 @@ def create_checkout_session():
         if not user_id or not plan:
             return jsonify({"error": "Missing user_id or plan"}), 400
         
-        # Define prices based on plan (in cents)
-        prices = {
-            "basic": {"price": 999, "description": "Basic Tier (1 month)"},
-            "silver": {"price": 2499, "description": "Silver Tier (3 months)"},
-            "gold": {"price": 4499, "description": "Gold Tier (6 months)"},
-            "platinum": {"price": 7999, "description": "Platinum Tier (12 months)"},
+        # Define plans
+        plans = {
+            "basic": "Basic Tier (1 month)",
+            "silver": "Silver Tier (3 months)",
+            "gold": "Gold Tier (6 months)",
+            "platinum": "Platinum Tier (12 months)",
         }
         
-        if plan not in prices:
+        if plan not in plans:
             return jsonify({"error": "Invalid plan"}), 400
         
-        # Create checkout session
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'usd',
-                    'product_data': {
-                        'name': prices[plan]["description"],
-                        'description': 'HUMBL3 CH3CK4R Bot Premium Access'
-                    },
-                    'unit_amount': prices[plan]["price"],
-                },
-                'quantity': 1,
-            }],
-            mode='payment',
-            success_url=f'https://{YOUR_DOMAIN}/success?session_id={{CHECKOUT_SESSION_ID}}&user_id={user_id}&plan={plan}&ref={reference_id}',
-            cancel_url=f'https://{YOUR_DOMAIN}/cancel',
-            metadata={
-                'user_id': str(user_id),
-                'plan': plan,
-                'reference_id': reference_id or ''
-            }
-        )
+        # Get admin username from config
+        from config import ADMIN_USERNAME
         
-        # If GET request, redirect to checkout URL
-        if request.method == 'GET':
-            return redirect(checkout_session.url)
+        # Create Telegram deep link to message the admin
+        telegram_url = f"https://t.me/{ADMIN_USERNAME}?start=buy_{plan}_{reference_id}_{user_id}"
         
-        # If POST request, return session details as JSON
-        return jsonify({"id": checkout_session.id, "url": checkout_session.url})
+        # Redirect to Telegram chat with the admin
+        return redirect(telegram_url)
+        
     except Exception as e:
-        logger.error(f"Error creating checkout session: {str(e)}")
+        logger.error(f"Error redirecting to admin: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
-@app.route('/webhook', methods=['POST'])
-def webhook():
-    """Handle Stripe webhook events"""
-    payload = request.get_data()
-    sig_header = request.headers.get('Stripe-Signature')
-
-    try:
-        if not stripe_api_key:
-            logger.warning("Stripe API key not configured, skipping webhook verification")
-            event = json.loads(payload)
-        else:
-            # Get webhook secret from environment
-            webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-            if webhook_secret:
-                event = stripe.Webhook.construct_event(
-                    payload, sig_header, webhook_secret
-                )
-            else:
-                logger.warning("Stripe webhook secret not configured, skipping webhook verification")
-                event = json.loads(payload)
-        
-        # Handle the event
-        if event['type'] == 'checkout.session.completed':
-            session = event['data']['object']
-            
-            # Get metadata
-            user_id = session.get('metadata', {}).get('user_id')
-            plan = session.get('metadata', {}).get('plan')
-            
-            if user_id and plan:
-                # Process the payment based on the plan
-                # This would typically update the user's status in your database
-                logger.info(f"Payment completed for user {user_id}, plan: {plan}")
-                
-                # Import here to avoid circular imports
-                from database import Database
-                db = Database()
-                
-                # Calculate premium duration based on plan
-                premium_duration = None
-                if plan == "basic":  # Basic Tier (1 month)
-                    premium_days = 30
-                elif plan == "silver":  # Silver Tier (3 months)
-                    premium_days = 90
-                elif plan == "gold":  # Gold Tier (6 months)
-                    premium_days = 180
-                elif plan == "platinum":  # Platinum Tier (12 months)
-                    premium_days = 365
-                elif plan == "weekly":  # Backwards compatibility
-                    premium_days = 7
-                elif plan == "monthly":  # Backwards compatibility
-                    premium_days = 30
-                elif plan == "lifetime":  # Backwards compatibility
-                    premium_days = 36500  # ~100 years
-                else:
-                    premium_days = 0
-                
-                # Update user status
-                if premium_days > 0:
-                    import time
-                    expiry = int(time.time()) + (premium_days * 24 * 60 * 60)
-                    db.set_premium(int(user_id), expiry)
-                    logger.info(f"Premium status updated for user {user_id}, expires at {expiry}")
-                
-        return jsonify(success=True)
-    except Exception as e:
-        logger.error(f"Error handling webhook: {str(e)}")
-        return jsonify(error=str(e)), 500
-
-@app.route('/success')
-def success():
-    """Payment success page"""
-    session_id = request.args.get('session_id')
+@app.route('/manual-payment-confirmation', methods=['GET', 'POST'])
+def manual_payment_confirmation():
+    """Manual payment confirmation page for PayPal payments"""
     user_id = request.args.get('user_id')
     plan = request.args.get('plan')
+    payment_ref = request.args.get('ref')
     
-    return render_template('success.html', 
-                          session_id=session_id,
+    if not user_id or not plan or not payment_ref:
+        return jsonify({"error": "Missing required parameters"}), 400
+    
+    # Store payment details for admin review
+    try:
+        # Load the existing payment records or create new
+        payment_records_file = 'payment_records.json'
+        try:
+            with open(payment_records_file, 'r') as f:
+                payment_records = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            payment_records = {"pending": [], "completed": []}
+        
+        # Store this payment request as pending
+        import time
+        payment_records["pending"].append({
+            "user_id": user_id,
+            "plan": plan, 
+            "payment_ref": payment_ref,
+            "timestamp": int(time.time()),
+            "status": "pending"
+        })
+        
+        # Save the updated records
+        with open(payment_records_file, 'w') as f:
+            json.dump(payment_records, f, indent=2)
+        
+        # Show success page with instructions
+        return render_template('payment_confirmation.html',
+                             user_id=user_id,
+                             plan=plan,
+                             payment_ref=payment_ref,
+                             bot_name="HUMBL3 CH3CK4R")
+    
+    except Exception as e:
+        logger.error(f"Error handling payment confirmation: {str(e)}")
+        return jsonify({"error": "An error occurred processing your payment confirmation"}), 500
+
+@app.route('/admin/payments', methods=['GET', 'POST'])
+def admin_payments():
+    """Admin panel to approve payments"""
+    from config import ADMIN_USER_IDS
+    
+    # Check for admin authentication
+    admin_id = request.args.get('admin_id')
+    if not admin_id or int(admin_id) not in ADMIN_USER_IDS:
+        return jsonify({"error": "Unauthorized access"}), 401
+    
+    # Process payment approval
+    if request.method == 'POST':
+        payment_ref = request.form.get('payment_ref')
+        action = request.form.get('action')  # 'approve' or 'reject'
+        
+        if not payment_ref or not action:
+            return jsonify({"error": "Missing required parameters"}), 400
+        
+        # Load payment records
+        try:
+            with open('payment_records.json', 'r') as f:
+                payment_records = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return jsonify({"error": "No payment records found"}), 404
+        
+        # Find the payment
+        payment = None
+        for p in payment_records["pending"]:
+            if p["payment_ref"] == payment_ref:
+                payment = p
+                break
+        
+        if not payment:
+            return jsonify({"error": f"Payment with reference {payment_ref} not found"}), 404
+        
+        # Process the action
+        if action == 'approve':
+            # Calculate premium duration based on plan
+            plan = payment["plan"]
+            user_id = payment["user_id"]
+            
+            # Import here to avoid circular imports
+            from database import Database
+            db = Database()
+            
+            # Calculate premium duration based on plan
+            if plan == "basic":  # Basic Tier (1 month)
+                premium_days = 30
+            elif plan == "silver":  # Silver Tier (3 months)
+                premium_days = 90
+            elif plan == "gold":  # Gold Tier (6 months)
+                premium_days = 180
+            elif plan == "platinum":  # Platinum Tier (12 months)
+                premium_days = 365
+            else:
+                premium_days = 0
+            
+            # Update user status
+            if premium_days > 0:
+                expiry = int(time.time()) + (premium_days * 24 * 60 * 60)
+                db.set_premium(int(user_id), expiry)
+                logger.info(f"Premium status updated for user {user_id}, plan: {plan}, expires at {expiry}")
+                
+                # Update payment record
+                payment_records["pending"].remove(payment)
+                payment["status"] = "completed"
+                payment["approved_at"] = int(time.time())
+                payment["approved_by"] = admin_id
+                payment_records["completed"].append(payment)
+                
+                # Save updated records
+                with open('payment_records.json', 'w') as f:
+                    json.dump(payment_records, f, indent=2)
+                
+                return jsonify({"success": True, "message": f"Payment for user {user_id} approved"})
+            return jsonify({"error": "Invalid premium plan duration"}), 400
+        else:
+            # Reject the payment
+            payment_records["pending"].remove(payment)
+            payment["status"] = "rejected"
+            payment["rejected_at"] = int(time.time())
+            payment["rejected_by"] = admin_id
+            payment_records["completed"].append(payment)
+            
+            # Save updated records
+            with open('payment_records.json', 'w') as f:
+                json.dump(payment_records, f, indent=2)
+            
+            user_id = payment["user_id"]
+            return jsonify({"success": True, "message": f"Payment for user {user_id} rejected"})
+    
+    # Show pending payments
+    try:
+        with open('payment_records.json', 'r') as f:
+            payment_records = json.load(f)
+        pending_payments = payment_records.get("pending", [])
+        return render_template('admin_payments.html', 
+                              payments=pending_payments,
+                              admin_id=admin_id,
+                              bot_name="HUMBL3 CH3CK4R")
+    except (FileNotFoundError, json.JSONDecodeError):
+        # No records yet
+        return render_template('admin_payments.html', 
+                              payments=[],
+                              admin_id=admin_id,
+                              bot_name="HUMBL3 CH3CK4R")
+
+@app.route('/payment-success')
+def payment_success():
+    """Payment success page for completed payments"""
+    user_id = request.args.get('user_id')
+    plan = request.args.get('plan')
+    payment_ref = request.args.get('ref')
+    
+    return render_template('payment_success.html', 
                           user_id=user_id,
                           plan=plan,
+                          payment_ref=payment_ref,
                           bot_name="HUMBL3 CH3CK4R")
 
 @app.route('/cancel')

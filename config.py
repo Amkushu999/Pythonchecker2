@@ -14,6 +14,9 @@ ADMIN_USER_IDS = [7367527491]  # Your Telegram user ID
 if os.getenv("ADMIN_USER_IDS"):
     ADMIN_USER_IDS.extend([int(id) for id in os.getenv("ADMIN_USER_IDS", "").split(",") if id])
 
+# Admin username for direct messaging
+ADMIN_USERNAME = "amkuush"
+
 # Default credit settings
 DEFAULT_CREDITS = 100
 CREDITS_PER_CHECK = 1

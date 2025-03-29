@@ -1,5 +1,16 @@
 {
-  "users": {},
+  "users": {
+    "7367527491": {
+      "username": "Amkuush",
+      "credits": 100,
+      "is_premium": false,
+      "premium_expiry": null,
+      "registered_at": 1743281875,
+      "total_checks": 0,
+      "successful_checks": 0,
+      "redeemed_codes": []
+    }
+  },
   "codes": {},
   "authorized_groups": [],
   "banned_users": {},

@@ -23,7 +23,8 @@ def run_flask_app():
 def run_telegram_bot():
     """Run the Telegram bot."""
     try:
-        from telegram.ext import Updater
+        import asyncio
+        from telegram.ext import Application
         from bot import setup_bot
     except ImportError as e:
         logger.error(f"Failed to import Telegram modules: {e}")
@@ -38,19 +39,15 @@ def run_telegram_bot():
         return
 
     try:
-        # Create the Updater and pass it your bot's token
-        updater = Updater(token=token, use_context=True)
-        
-        # Get the dispatcher to register handlers
-        dispatcher = updater.dispatcher
+        # Create the Application instance
+        application = Application.builder().token(token).build()
         
         # Setup bot with all handlers
-        setup_bot(dispatcher)
+        setup_bot(application)
         
         # Run the bot until the user presses Ctrl-C
         logger.info("Starting Telegram bot...")
-        updater.start_polling()
-        updater.idle()
+        application.run_polling(allowed_updates=["message", "callback_query", "chat_member"])
     except Exception as e:
         logger.error(f"Error starting Telegram bot: {e}")
         sys.exit(1)

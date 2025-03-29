@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ bot_name }} - Payment Cancelled</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
             background-color: #121212;
@@ -13,46 +13,98 @@
         }
         .cancel-container {
             max-width: 600px;
-            margin: 100px auto;
-            padding: 40px;
+            margin: 50px auto;
+            padding: 30px;
             background-color: #1e1e1e;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
+        .header {
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00bcd4;
+            margin-bottom: 10px;
+        }
         .cancel-icon {
-            font-size: 5rem;
-            color: #F44336;
+            font-size: 60px;
+            color: #f44336;
+            margin: 20px 0;
+        }
+        .cancel-message {
+            font-size: 24px;
+            font-weight: bold;
             margin-bottom: 20px;
+            color: #f44336;
         }
-        .btn-primary {
-            background-color: #6772E5;
-            border-color: #6772E5;
+        .message-details {
+            margin-bottom: 30px;
         }
-        .btn-primary:hover {
-            background-color: #5469d4;
-            border-color: #5469d4;
+        .back-to-bot {
+            display: inline-block;
+            background-color: #00bcd4;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .back-to-bot:hover {
+            background-color: #00a0b7;
+            color: white;
+        }
+        .try-again {
+            display: inline-block;
+            background-color: #ff9800;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .try-again:hover {
+            background-color: #f57c00;
+            color: white;
+        }
+        .footer {
+            margin-top: 30px;
+            color: #9e9e9e;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="cancel-container">
-            <div class="cancel-icon">✕</div>
-            <h1>Payment Cancelled</h1>
-            <p class="lead">Your payment for {{ bot_name }} Premium was cancelled.</p>
-            
-            <p class="mt-4">You can still use the bot with free features. If you'd like to try subscribing again, you can do so anytime.</p>
-            
-            <div class="mt-4">
-                <a href="/" class="btn btn-primary me-2">Try Again</a>
-                <a href="https://t.me/{{ bot_name }}" class="btn btn-outline-light">Return to Bot</a>
+            <div class="header">
+                <div class="logo">{{ bot_name }}</div>
+                <p>Payment Cancelled</p>
             </div>
             
-            <p class="mt-4 text-muted small">If you experienced any issues during the payment process, please contact support.</p>
+            <div class="cancel-icon">✕</div>
+            <div class="cancel-message">Payment Process Cancelled</div>
+            
+            <div class="message-details">
+                <p>Your payment process has been cancelled. No charges have been made.</p>
+                <p>You can try again or return to the bot to continue using the free services.</p>
+            </div>
+            
+            <div>
+                <a href="https://t.me/HUMBL3_CH3CK4R_BOT" class="back-to-bot">Return to Telegram Bot</a>
+            </div>
+            <div>
+                <a href="https://t.me/HUMBL3_CH3CK4R_BOT?start=buy" class="try-again">Try Again</a>
+            </div>
+            
+            <div class="footer">
+                <p>Thank you for your interest in our premium services.</p>
+                <p>If you have any questions, please contact the bot administrator via Telegram.</p>
+            </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
