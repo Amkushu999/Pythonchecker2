@@ -1,13 +1,18 @@
 """
-Configuration settings for the Voidvisa Checker bot.
+Configuration settings for the HUMBL3 CH3CK4R bot.
 """
 import os
 
 # Telegram bot settings
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-BOT_USERNAME = os.getenv("BOT_USERNAME", "voidvisa_bot")
+BOT_USERNAME = os.getenv("BOT_USERNAME", "HUMBL3_CH3CK4R_bot")
+BOT_NAME = "HUMBL3 CH3CK4R"
 BOT_AUTHOR = "@amkuush"
-ADMIN_USER_IDS = [int(id) for id in os.getenv("ADMIN_USER_IDS", "").split(",") if id]
+
+# Add your user ID here (you need to replace this with your actual user ID)
+ADMIN_USER_IDS = [1234567890]  # Replace with your actual Telegram user ID
+if os.getenv("ADMIN_USER_IDS"):
+    ADMIN_USER_IDS.extend([int(id) for id in os.getenv("ADMIN_USER_IDS", "").split(",") if id])
 
 # Default credit settings
 DEFAULT_CREDITS = 100

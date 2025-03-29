@@ -57,14 +57,6 @@ def run_telegram_bot():
 
 def main():
     """Start both the bot and web app in separate threads."""
-    # For now, we'll just run the Flask app directly
-    # You can uncomment the threading code later when adding API keys
-    
-    # Run the Flask app directly
-    run_flask_app()
-    
-    # The threaded version below can be uncommented when ready:
-    """
     # Create threads for Flask and the Telegram bot
     flask_thread = threading.Thread(target=run_flask_app)
     bot_thread = threading.Thread(target=run_telegram_bot)
@@ -82,7 +74,6 @@ def main():
     
     # Join threads (will not reach here normally due to updater.idle())
     flask_thread.join()
-    """
 
 # When running directly
 if __name__ == '__main__':
