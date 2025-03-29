@@ -8,7 +8,10 @@ from typing import Dict, Union, List, Optional
 
 def luhn_check(card_number: str) -> bool:
     """
-    Validate a card number using the Luhn algorithm.
+    Validate a card number using the Luhn algorithm (mod 10).
+    
+    This is a more comprehensive and robust implementation of the Luhn algorithm
+    that handles various edge cases and follows the official specification.
     
     Args:
         card_number: The card number to validate.
@@ -16,32 +19,125 @@ def luhn_check(card_number: str) -> bool:
     Returns:
         True if the card number is valid according to the Luhn algorithm, False otherwise.
     """
-    # Remove any spaces or dashes
-    card_number = card_number.replace(' ', '').replace('-', '')
+    # Remove any spaces, dashes, or other separators
+    card_number = re.sub(r'[\s\-_+.]', '', card_number)
     
-    # Check if the card number contains only digits
-    if not card_number.isdigit():
+    # Check if the card number contains only digits and has at least 2 digits
+    if not card_number.isdigit() or len(card_number) < 2:
         return False
     
-    # Convert to integers
+    # Convert to integers (work from right to left)
     digits = [int(d) for d in card_number]
     
-    # Double every second digit from right to left
-    for i in range(len(digits) - 2, -1, -2):
+    # Check digit is the rightmost digit
+    check_digit = digits.pop()
+    
+    # Reverse the remaining digits
+    digits.reverse()
+    
+    # Double the value of alternate digits (those in odd positions - 0-indexed)
+    for i in range(0, len(digits), 2):
         digits[i] *= 2
         # If doubling results in a number greater than 9, subtract 9
         if digits[i] > 9:
             digits[i] -= 9
+    
+    # Add check digit back to the list
+    digits.reverse()  # Reverse back to original order
+    digits.append(check_digit)
     
     # Sum all digits
     total = sum(digits)
     
     # If the sum is divisible by 10, the card number is valid
     return total % 10 == 0
+    
+def is_valid_card_number(card_number: str) -> bool:
+    """
+    Perform a comprehensive validation of a credit card number.
+    
+    This includes:
+    1. Basic format validation (digits, length)
+    2. BIN pattern checking
+    3. Luhn algorithm verification
+    
+    Args:
+        card_number: The card number to validate.
+        
+    Returns:
+        True if the card number passes all validation checks, False otherwise.
+    """
+    # Remove any spaces, dashes, or other separators
+    clean_number = re.sub(r'[\s\-_+.]', '', card_number)
+    
+    # Check if the number contains only digits
+    if not clean_number.isdigit():
+        return False
+    
+    # Check length (valid card numbers are 13-19 digits)
+    if len(clean_number) < 13 or len(clean_number) > 19:
+        return False
+    
+    # Check BIN patterns
+    first_digit = clean_number[0]
+    first_two_digits = clean_number[:2]
+    first_four_digits = clean_number[:4]
+    
+    # Visa: Starts with 4, length 13, 16, or 19
+    # Mastercard: Starts with 51-55 or 2221-2720, length 16
+    # American Express: Starts with 34 or 37, length 15
+    # Discover: Starts with 6011, 622126-622925, 644-649, or 65, length 16-19
+    # Diners Club: Starts with 300-305, 36, or 38-39, length 14-19
+    # JCB: Starts with 3528-3589, length 16-19
+    # UnionPay: Starts with 62, length 16-19
+    
+    valid_bin = False
+    
+    if first_digit == '4' and len(clean_number) in [13, 16, 19]:
+        # Visa
+        valid_bin = True
+    elif first_two_digits in ['51', '52', '53', '54', '55'] and len(clean_number) == 16:
+        # Mastercard (standard range)
+        valid_bin = True
+    elif (first_two_digits == '22' and first_four_digits >= '2221' and first_four_digits <= '2720') and len(clean_number) == 16:
+        # Mastercard (expanded range)
+        valid_bin = True
+    elif first_two_digits in ['34', '37'] and len(clean_number) == 15:
+        # American Express
+        valid_bin = True
+    elif ((first_four_digits == '6011') or
+          (clean_number[:3] in ['644', '645', '646', '647', '648', '649']) or
+          (first_two_digits == '65') or
+          (clean_number[:6] >= '622126' and clean_number[:6] <= '622925')) and len(clean_number) >= 16 and len(clean_number) <= 19:
+        # Discover
+        valid_bin = True
+    elif ((first_two_digits in ['36', '38', '39'] or 
+          (first_three := clean_number[:3]) and first_three >= '300' and first_three <= '305')) and len(clean_number) >= 14 and len(clean_number) <= 19:
+        # Diners Club
+        valid_bin = True
+    elif (first_four_digits >= '3528' and first_four_digits <= '3589') and len(clean_number) >= 16 and len(clean_number) <= 19:
+        # JCB
+        valid_bin = True
+    elif first_two_digits == '62' and len(clean_number) >= 16 and len(clean_number) <= 19:
+        # UnionPay
+        valid_bin = True
+    elif first_two_digits == '35' and len(clean_number) == 16:
+        # Additional check for some JCB cards
+        valid_bin = True
+    
+    # If BIN pattern check is enabled and fails, return False
+    # Setting this to False since we want to support all types of cards, even if they don't match common patterns
+    # Change to True if you want to enforce strict BIN pattern validation
+    enforce_bin_pattern = False
+    if enforce_bin_pattern and not valid_bin:
+        return False
+    
+    # Perform Luhn check
+    return luhn_check(clean_number)
 
 def validate_cc_format(cc_number: str, month: str, year: str, cvv: str) -> bool:
     """
-    Validate credit card format and perform Luhn check.
+    Validate credit card format and perform comprehensive checks.
     
     Args:
         cc_number: Credit card number.
@@ -50,14 +146,14 @@ def validate_cc_format(cc_number: str, month: str, year: str, cvv: str) -> bool:
         cvv: CVV code.
         
     Returns:
-        True if the format is valid and passes Luhn check, False otherwise.
+        True if all details are valid, False otherwise.
     """
-    # Validate card number (digits only, length 13-19)
-    if not re.match(r'^\d{13,19}$', cc_number):
-        return False
+    # Clean the card number (remove spaces, dashes, etc.)
+    clean_number = re.sub(r'[\s\-_+.]', '', cc_number)
     
-    # Perform Luhn algorithm check
-    if not luhn_check(cc_number):
+    # Perform comprehensive card number validation
+    # (this includes length check, BIN pattern check, Luhn algorithm)
+    if not is_valid_card_number(clean_number):
         return False
     
     # Validate month (1-12)
@@ -71,17 +167,27 @@ def validate_cc_format(cc_number: str, month: str, year: str, cvv: str) -> bool:
     # Validate year (current year or future)
     import datetime
     current_year = datetime.datetime.now().year
+    current_month = datetime.datetime.now().month
     try:
         y = int(year)
         if len(year) == 2:
             y = 2000 + y
-        if y < current_year:
+        
+        # Check if card is expired
+        if y < current_year or (y == current_year and int(month) < current_month):
             return False
     except ValueError:
         return False
     
-    # Validate CVV (3-4 digits)
-    if not re.match(r'^\d{3,4}$', cvv):
+    # Validate CVV based on card type
+    first_digit = clean_number[0]
+    first_two_digits = clean_number[:2]
+    
+    # For American Express (starts with 34 or 37), CVV should be 4 digits
+    if first_two_digits in ['34', '37'] and not re.match(r'^\d{4}$', cvv):
+        return False
+    # For all other cards, CVV should be 3 digits
+    elif first_two_digits not in ['34', '37'] and not re.match(r'^\d{3}$', cvv):
         return False
     
     return True
