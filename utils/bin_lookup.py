@@ -1,614 +1,349 @@
 """
-BIN (Bank Identification Number) lookup functionality.
+BIN lookup functionality for credit card information.
+Uses real BIN databases to provide accurate information.
 """
 import os
 import json
-import logging
-from typing import Dict, Optional
-from config import BIN_DATABASE_FILE
+import requests
+import time
+from typing import Dict, Any, Optional
 
-logger = logging.getLogger(__name__)
+from api_keys import BIN_LOOKUP_API_KEY
 
-# Major card network BIN prefixes
-CARD_NETWORK_BINS = {
-    "4": {
-        "brand": "Visa",
-        "type": "Credit/Debit",
-        "category": "Various",
-        "country": "International",
-        "bank": "Various"
-    },
-    "5": {
-        "brand": "Mastercard",
-        "type": "Credit/Debit",
-        "category": "Various",
-        "country": "International",
-        "bank": "Various"
-    },
-    "3": {
-        "brand": "American Express",
-        "type": "Credit",
-        "category": "Premium",
-        "country": "International",
-        "bank": "American Express"
-    },
-    "6": {
-        "brand": "Discover/UnionPay",
-        "type": "Credit/Debit",
-        "category": "Various",
-        "country": "International",
-        "bank": "Various"
-    },
-    "35": {
-        "brand": "JCB",
-        "type": "Credit",
-        "category": "Various",
-        "country": "Japan/International",
-        "bank": "Various Japanese Banks"
-    },
-    "30": {
-        "brand": "Diners Club",
-        "type": "Credit",
-        "category": "Premium",
-        "country": "International",
-        "bank": "Various"
-    },
-    "36": {
-        "brand": "Diners Club",
-        "type": "Credit",
-        "category": "Premium",
-        "country": "International",
-        "bank": "Various"
-    },
-    "38": {
-        "brand": "Diners Club",
-        "type": "Credit",
-        "category": "Premium",
-        "country": "International",
-        "bank": "Various"
-    },
-    "62": {
-        "brand": "UnionPay",
-        "type": "Credit/Debit",
-        "category": "Various",
-        "country": "China/International",
-        "bank": "Various Chinese Banks"
-    },
-    "81": {
-        "brand": "Humo",
-        "type": "Debit",
-        "category": "National",
-        "country": "Uzbekistan",
-        "bank": "Various Uzbek Banks"
-    }
-}
+# File containing the BIN database
+BIN_DATABASE_FILE = "bin_database.json"
 
-# Specific country BINs (more comprehensive)
-SPECIFIC_BINS = {
-    # US Banks
-    "401200": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "United States",
-        "bank": "Bank of America"
-    },
-    "414720": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Signature",
-        "country": "United States",
-        "bank": "Chase Bank"
-    },
-    "440393": {
-        "brand": "Visa",
-        "type": "Debit",
-        "category": "Classic",
-        "country": "United States",
-        "bank": "Chase Bank"
-    },
-    "528913": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "United States",
-        "bank": "Wells Fargo"
-    },
-    "542418": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Platinum",
-        "country": "United States",
-        "bank": "Citibank"
-    },
-    "371449": {
-        "brand": "American Express",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "United States",
-        "bank": "American Express"
-    },
-    "378282": {
-        "brand": "American Express",
-        "type": "Credit",
-        "category": "Platinum",
-        "country": "United States",
-        "bank": "American Express"
-    },
-    
-    # UK Banks
-    "454313": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "United Kingdom",
-        "bank": "Barclays"
-    },
-    "492181": {
-        "brand": "Visa",
-        "type": "Debit",
-        "category": "Classic",
-        "country": "United Kingdom",
-        "bank": "HSBC"
-    },
-    "543460": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "United Kingdom",
-        "bank": "Lloyds Bank"
-    },
-    
-    # Canadian Banks
-    "450803": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "Canada",
-        "bank": "Royal Bank of Canada"
-    },
-    "516075": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "Canada",
-        "bank": "TD Bank"
-    },
-    
-    # Australian Banks
-    "456475": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "Australia",
-        "bank": "Commonwealth Bank"
-    },
-    "522980": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Platinum",
-        "country": "Australia",
-        "bank": "ANZ Bank"
-    },
-    
-    # German Banks
-    "491361": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "Germany",
-        "bank": "Deutsche Bank"
-    },
-    "520058": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "Germany",
-        "bank": "Commerzbank"
-    },
-    
-    # French Banks
-    "497017": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "France",
-        "bank": "BNP Paribas"
-    },
-    "513381": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "France",
-        "bank": "Société Générale"
-    },
-    
-    # Japanese Banks
-    "456789": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "Japan",
-        "bank": "Mitsubishi UFJ"
-    },
-    "358673": {
-        "brand": "JCB",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "Japan",
-        "bank": "Mizuho Bank"
-    },
-    "356778": {
-        "brand": "JCB",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "Japan",
-        "bank": "Sumitomo Mitsui"
-    },
-    
-    # Brazilian Banks
-    "411825": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "Brazil",
-        "bank": "Banco do Brasil"
-    },
-    "551011": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "Brazil",
-        "bank": "Itaú Unibanco"
-    },
-    
-    # Indian Banks
-    "489015": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "India",
-        "bank": "State Bank of India"
-    },
-    "512881": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "India",
-        "bank": "HDFC Bank"
-    },
-    
-    # South African Banks
-    "478943": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "South Africa",
-        "bank": "Standard Bank"
-    },
-    "538612": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "South Africa",
-        "bank": "FNB"
-    },
-    
-    # Chinese Banks
-    "621785": {
-        "brand": "UnionPay",
-        "type": "Debit",
-        "category": "Classic",
-        "country": "China",
-        "bank": "ICBC"
-    },
-    "625209": {
-        "brand": "UnionPay",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "China",
-        "bank": "Bank of China"
-    },
-    
-    # Russian Banks
-    "427683": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "Russia",
-        "bank": "Sberbank"
-    },
-    "532301": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "Russia",
-        "bank": "VTB Bank"
-    },
-    
-    # UAE Banks
-    "419860": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Platinum",
-        "country": "United Arab Emirates",
-        "bank": "Emirates NBD"
-    },
-    "552033": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "World",
-        "country": "United Arab Emirates",
-        "bank": "Abu Dhabi Commercial Bank"
-    },
-    
-    # Mexican Banks
-    "471324": {
-        "brand": "Visa",
-        "type": "Credit",
-        "category": "Classic",
-        "country": "Mexico",
-        "bank": "BBVA Bancomer"
-    },
-    "557910": {
-        "brand": "Mastercard",
-        "type": "Credit",
-        "category": "Gold",
-        "country": "Mexico",
-        "bank": "Santander Mexico"
-    }
-}
-
-def load_bin_database() -> Dict:
-    """Load the BIN database from file or create a comprehensive one if it doesn't exist."""
-    if os.path.exists(BIN_DATABASE_FILE):
-        try:
-            with open(BIN_DATABASE_FILE, 'r') as f:
-                loaded_db = json.load(f)
-                logger.info(f"Loaded BIN database with {len(loaded_db)} entries")
-                return loaded_db
-        except (json.JSONDecodeError, IOError) as e:
-            logger.error(f"Error loading BIN database: {e}")
-            # Fall back to built-in database
-    
-    # Create a comprehensive BIN database by combining all sources
-    combined_db = {**CARD_NETWORK_BINS, **SPECIFIC_BINS}
-    
-    # Add BINs for more countries to ensure worldwide coverage
-    more_countries = {
-        # Spain
-        "471491": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Spain", "bank": "BBVA"},
-        "548519": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Spain", "bank": "Santander"},
-        
-        # Italy
-        "432382": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Italy", "bank": "UniCredit"},
-        "534025": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Italy", "bank": "Intesa Sanpaolo"},
-        
-        # Netherlands
-        "412356": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Netherlands", "bank": "ING Bank"},
-        "515941": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Netherlands", "bank": "ABN AMRO"},
-        
-        # Sweden
-        "476701": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Sweden", "bank": "Nordea"},
-        "527518": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Sweden", "bank": "SEB"},
-        
-        # Norway
-        "422275": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Norway", "bank": "DNB"},
-        "531980": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Norway", "bank": "Sparebank"},
-        
-        # Denmark
-        "457382": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Denmark", "bank": "Danske Bank"},
-        "559004": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Denmark", "bank": "Jyske Bank"},
-        
-        # Finland
-        "402936": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Finland", "bank": "OP Bank"},
-        "529756": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Finland", "bank": "Nordea Finland"},
-        
-        # Singapore
-        "472836": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Singapore", "bank": "DBS Bank"},
-        "522188": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Singapore", "bank": "OCBC Bank"},
-        
-        # Hong Kong
-        "431673": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Hong Kong", "bank": "HSBC Hong Kong"},
-        "518880": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Hong Kong", "bank": "Bank of China (HK)"},
-        
-        # South Korea
-        "409538": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "South Korea", "bank": "KB Kookmin Bank"},
-        "537043": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "South Korea", "bank": "Shinhan Bank"},
-        
-        # Indonesia
-        "476285": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Indonesia", "bank": "Bank Mandiri"},
-        "524435": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Indonesia", "bank": "BCA"},
-        
-        # Malaysia
-        "483766": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Malaysia", "bank": "Maybank"},
-        "552289": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Malaysia", "bank": "CIMB Bank"},
-        
-        # Thailand
-        "492194": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Thailand", "bank": "Kasikornbank"},
-        "526289": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Thailand", "bank": "Bangkok Bank"},
-        
-        # Vietnam
-        "496212": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Vietnam", "bank": "Vietcombank"},
-        "524523": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Vietnam", "bank": "BIDV"},
-        
-        # Philippines
-        "428685": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Philippines", "bank": "BDO"},
-        "533817": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Philippines", "bank": "BPI"},
-        
-        # Turkey
-        "479633": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Turkey", "bank": "Garanti BBVA"},
-        "525795": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Turkey", "bank": "Akbank"},
-        
-        # Israel
-        "485234": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Israel", "bank": "Bank Leumi"},
-        "543817": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Israel", "bank": "Bank Hapoalim"},
-        
-        # Saudi Arabia
-        "440647": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Saudi Arabia", "bank": "Al Rajhi Bank"},
-        "536924": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Saudi Arabia", "bank": "National Commercial Bank"},
-        
-        # Qatar
-        "459360": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Qatar", "bank": "QNB"},
-        "521076": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Qatar", "bank": "Masraf Al Rayan"},
-        
-        # Egypt
-        "412123": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Egypt", "bank": "National Bank of Egypt"},
-        "539154": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Egypt", "bank": "Commercial International Bank"},
-        
-        # Nigeria
-        "419286": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Nigeria", "bank": "Zenith Bank"},
-        "553188": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Nigeria", "bank": "GTBank"},
-        
-        # Kenya
-        "465901": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Kenya", "bank": "Equity Bank"},
-        "512834": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Kenya", "bank": "KCB Group"},
-        
-        # Argentina
-        "423693": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Argentina", "bank": "Banco Galicia"},
-        "542735": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Argentina", "bank": "Banco Santander Rio"},
-        
-        # Chile
-        "493151": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Chile", "bank": "Banco de Chile"},
-        "518154": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Chile", "bank": "Banco Santander Chile"},
-        
-        # Colombia
-        "408593": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Colombia", "bank": "Bancolombia"},
-        "516131": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Colombia", "bank": "Banco de Bogotá"},
-        
-        # Peru
-        "451015": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Peru", "bank": "BCP"},
-        "532123": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Peru", "bank": "Interbank"},
-        
-        # Pakistan
-        "442732": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Pakistan", "bank": "HBL"},
-        "535420": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Pakistan", "bank": "MCB Bank"},
-        
-        # Bangladesh
-        "490670": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Bangladesh", "bank": "Eastern Bank"},
-        "522156": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Bangladesh", "bank": "City Bank"},
-        
-        # New Zealand
-        "462287": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "New Zealand", "bank": "ANZ NZ"},
-        "519714": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "New Zealand", "bank": "BNZ"},
-        
-        # Greece
-        "413081": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Greece", "bank": "Alpha Bank"},
-        "528680": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Greece", "bank": "Piraeus Bank"},
-        
-        # Poland
-        "417004": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Poland", "bank": "PKO Bank Polski"},
-        "535294": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Poland", "bank": "Pekao SA"},
-        
-        # Czech Republic
-        "416681": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Czech Republic", "bank": "Česká spořitelna"},
-        "514212": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Czech Republic", "bank": "ČSOB"},
-        
-        # Hungary
-        "474340": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Hungary", "bank": "OTP Bank"},
-        "511103": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Hungary", "bank": "K&H Bank"},
-        
-        # Romania
-        "455625": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Romania", "bank": "Banca Transilvania"},
-        "525383": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Romania", "bank": "BCR"},
-        
-        # Bulgaria
-        "447309": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Bulgaria", "bank": "DSK Bank"},
-        "543785": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Bulgaria", "bank": "Postbank"},
-        
-        # Serbia
-        "428964": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Serbia", "bank": "Banca Intesa"},
-        "527863": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Serbia", "bank": "Raiffeisen Bank"},
-        
-        # Croatia
-        "472163": {"brand": "Visa", "type": "Credit", "category": "Classic", "country": "Croatia", "bank": "Zagrebačka banka"},
-        "529897": {"brand": "Mastercard", "type": "Credit", "category": "Gold", "country": "Croatia", "bank": "PBZ"}
-    }
-    
-    # Merge the additional country BINs into combined_db
-    combined_db.update(more_countries)
-    
-    # Save the comprehensive database to file
-    try:
-        with open(BIN_DATABASE_FILE, 'w') as f:
-            json.dump(combined_db, f, indent=2)
-        logger.info(f"Created and saved comprehensive BIN database with {len(combined_db)} entries")
-    except IOError as e:
-        logger.error(f"Error saving BIN database: {e}")
-    
-    return combined_db
-
-# Load BIN database on module import
-bin_database = load_bin_database()
-
-def lookup_bin(bin_code: str) -> Dict:
+def get_bin_info(bin_digits: str) -> Optional[Dict[str, Any]]:
     """
-    Look up a BIN code in the database.
+    Get information about a Bank Identification Number (BIN).
+    Uses a combination of local database and API lookup.
     
     Args:
-        bin_code: The BIN code to look up (first 6 digits of a card number).
+        bin_digits: First 6 digits of the credit card number (BIN/IIN)
         
     Returns:
-        A dictionary with BIN information.
+        Dictionary containing BIN information or None if not found
     """
-    # Clean the bin_code to ensure it's digits only
-    bin_code = ''.join(c for c in bin_code if c.isdigit())
+    # First, try to get BIN info from the local database (faster and no API call needed)
+    local_bin_info = get_bin_info_from_local_db(bin_digits)
+    if local_bin_info:
+        return local_bin_info
     
-    if not bin_code:
-        return {
-            "brand": "Unknown",
-            "type": "Unknown",
-            "category": "Unknown",
-            "country": "Unknown",
-            "bank": "Unknown"
-        }
+    # If not found locally, try to get BIN info from online API
+    api_bin_info = get_bin_info_from_api(bin_digits)
+    if api_bin_info:
+        # Add to local database for future use
+        add_bin_to_local_db(bin_digits, api_bin_info)
+        return api_bin_info
     
-    # Always look in the global database first, which may have been updated
-    if bin_code in bin_database:
-        return bin_database[bin_code]
-    
-    # Try exact 6-digit match first
-    bin_6 = bin_code[:6] if len(bin_code) >= 6 else bin_code
-    if bin_6 in bin_database:
-        return bin_database[bin_6]
-    
-    # Try partial matches of different lengths
-    for length in range(5, 0, -1):
-        if len(bin_code) >= length:
-            bin_prefix = bin_code[:length]
-            
-            # Look for exact match at this length
-            if bin_prefix in bin_database:
-                return bin_database[bin_prefix]
-            
-            # Look for keys starting with this prefix
-            for key in bin_database:
-                if key.startswith(bin_prefix) and len(key) >= length:
-                    return bin_database[key]
-    
-    # Fallback to basic card network identification based on first digit
-    # This ensures we always return some useful information
-    first_digit = bin_code[0] if bin_code else ""
-    basic_info = {
-        "1": {"brand": "Various", "type": "Various", "category": "Various", "country": "International", "bank": "Various"},
-        "2": {"brand": "Various", "type": "Various", "category": "Various", "country": "International", "bank": "Various"},
-        "3": {"brand": "American Express/Diners Club", "type": "Credit", "category": "Premium", "country": "International", "bank": "Various"},
-        "4": {"brand": "Visa", "type": "Credit/Debit", "category": "Various", "country": "International", "bank": "Various"},
-        "5": {"brand": "Mastercard", "type": "Credit/Debit", "category": "Various", "country": "International", "bank": "Various"},
-        "6": {"brand": "Discover/UnionPay", "type": "Credit/Debit", "category": "Various", "country": "International", "bank": "Various"},
-        "7": {"brand": "Various", "type": "Various", "category": "Various", "country": "International", "bank": "Various"},
-        "8": {"brand": "Various", "type": "Various", "category": "Various", "country": "International", "bank": "Various"},
-        "9": {"brand": "Various", "type": "Various", "category": "Various", "country": "International", "bank": "Various"},
-    }
-    
-    if first_digit in basic_info:
-        return basic_info[first_digit]
-    
-    # Return a generic response if nothing found
+    # If we couldn't find information, return a standard format with unknown values
     return {
-        "brand": "Unknown",
-        "type": "Unknown",
-        "category": "Unknown",
+        "bin": bin_digits,
+        "bank": "Unknown",
         "country": "Unknown",
-        "bank": "Unknown"
+        "country_code": "XX",
+        "type": "Unknown",
+        "brand": "Unknown",
+        "category": "Unknown",
+        "timestamp": int(time.time())
     }
+
+def get_bin_info_from_local_db(bin_digits: str) -> Optional[Dict[str, Any]]:
+    """
+    Get BIN information from the local database file.
+    
+    Args:
+        bin_digits: First 6 digits of the credit card number
+        
+    Returns:
+        Dictionary containing BIN information or None if not found
+    """
+    try:
+        if not os.path.exists(BIN_DATABASE_FILE):
+            # If the database file doesn't exist, create it with an empty structure
+            with open(BIN_DATABASE_FILE, 'w') as f:
+                json.dump({}, f)
+            return None
+            
+        with open(BIN_DATABASE_FILE, 'r') as f:
+            bin_database = json.load(f)
+            
+        if bin_digits in bin_database:
+            return bin_database[bin_digits]
+        return None
+    except Exception as e:
+        print(f"Error accessing local BIN database: {e}")
+        return None
+
+def add_bin_to_local_db(bin_digits: str, bin_info: Dict[str, Any]) -> bool:
+    """
+    Add BIN information to the local database file.
+    
+    Args:
+        bin_digits: First 6 digits of the credit card number
+        bin_info: Dictionary containing BIN information
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        if not os.path.exists(BIN_DATABASE_FILE):
+            bin_database = {}
+        else:
+            with open(BIN_DATABASE_FILE, 'r') as f:
+                bin_database = json.load(f)
+                
+        bin_database[bin_digits] = bin_info
+        
+        with open(BIN_DATABASE_FILE, 'w') as f:
+            json.dump(bin_database, f, indent=2)
+            
+        return True
+    except Exception as e:
+        print(f"Error adding BIN to local database: {e}")
+        return False
+
+def get_bin_info_from_api(bin_digits: str) -> Optional[Dict[str, Any]]:
+    """
+    Get BIN information from an online API.
+    Supports multiple BIN lookup APIs for fallback.
+    
+    Args:
+        bin_digits: First 6 digits of the credit card number
+        
+    Returns:
+        Dictionary containing BIN information or None if not found
+    """
+    # Function to check if any API key is available
+    if not BIN_LOOKUP_API_KEY:
+        print("No BIN lookup API key available")
+        return use_fallback_bin_database(bin_digits)
+    
+    try:
+        # Primary BIN lookup API
+        url = f"https://lookup.binlist.net/{bin_digits}"
+        headers = {
+            "Accept-Version": "3",
+            "User-Agent": "BINCheckerBot/1.0"
+        }
+        
+        response = requests.get(url, headers=headers, timeout=5)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Format the response in a standard format
+            bin_info = {
+                "bin": bin_digits,
+                "bank": data.get("bank", {}).get("name", "Unknown"),
+                "country": data.get("country", {}).get("name", "Unknown"),
+                "country_code": data.get("country", {}).get("alpha2", "XX"),
+                "type": data.get("type", "Unknown"),
+                "brand": data.get("scheme", "Unknown"),
+                "category": data.get("type", "Unknown"),
+                "timestamp": int(time.time())
+            }
+            return bin_info
+            
+        # Try secondary BIN lookup API if primary fails
+        if response.status_code != 200:
+            return try_secondary_bin_api(bin_digits)
+            
+    except Exception as e:
+        print(f"Error fetching BIN info from API: {e}")
+        return try_secondary_bin_api(bin_digits)
+
+def try_secondary_bin_api(bin_digits: str) -> Optional[Dict[str, Any]]:
+    """
+    Try a secondary BIN lookup API when the primary one fails.
+    
+    Args:
+        bin_digits: First 6 digits of the credit card number
+        
+    Returns:
+        Dictionary containing BIN information or None if not found
+    """
+    try:
+        url = f"https://api.bincodes.com/bin/?format=json&api_key={BIN_LOOKUP_API_KEY}&bin={bin_digits}"
+        response = requests.get(url, timeout=5)
+        
+        if response.status_code == 200:
+            data = response.json()
+            
+            if "error" in data:
+                return use_fallback_bin_database(bin_digits)
+                
+            bin_info = {
+                "bin": bin_digits,
+                "bank": data.get("bank", "Unknown"),
+                "country": data.get("country", "Unknown"),
+                "country_code": data.get("countrycode", "XX"),
+                "type": data.get("card_type", "Unknown"),
+                "brand": data.get("card", "Unknown"),
+                "category": data.get("level", "Unknown"),
+                "timestamp": int(time.time())
+            }
+            return bin_info
+            
+        return use_fallback_bin_database(bin_digits)
+        
+    except Exception as e:
+        print(f"Error fetching BIN info from secondary API: {e}")
+        return use_fallback_bin_database(bin_digits)
+
+def use_fallback_bin_database(bin_digits: str) -> Optional[Dict[str, Any]]:
+    """
+    Use a fallback method to determine card brand and type based on BIN patterns.
+    This is used when no API is available or all API calls fail.
+    
+    Args:
+        bin_digits: First 6 digits of the credit card number
+        
+    Returns:
+        Dictionary containing basic BIN information
+    """
+    bin_prefix = bin_digits[:2]
+    
+    # Determine card brand based on IIN ranges
+    brand = "Unknown"
+    card_type = "Unknown"
+    country = "Unknown"
+    country_code = "XX"
+    bank = "Unknown"
+    
+    # Visa
+    if bin_digits.startswith("4"):
+        brand = "Visa"
+        if bin_digits.startswith("4026") or bin_digits.startswith("417500") or bin_digits.startswith("4508") or bin_digits.startswith("4844") or bin_digits.startswith("491"):
+            card_type = "Debit"
+        else:
+            card_type = "Credit"
+    
+    # Mastercard
+    elif bin_digits.startswith("5") and 1 <= int(bin_digits[1]) <= 5:
+        brand = "Mastercard"
+        card_type = "Credit"
+    elif bin_digits.startswith("2") and bin_digits[1:4] in ["221", "222", "223", "224", "225", "226", "227", "228", "229", "23", "24", "25", "26", "270", "271", "272"]:
+        brand = "Mastercard"
+        card_type = "Credit"
+    
+    # American Express
+    elif bin_digits.startswith("34") or bin_digits.startswith("37"):
+        brand = "American Express"
+        card_type = "Credit"
+    
+    # Discover
+    elif bin_digits.startswith("6011") or bin_digits.startswith("644") or bin_digits.startswith("645") or bin_digits.startswith("646") or bin_digits.startswith("647") or bin_digits.startswith("648") or bin_digits.startswith("649") or bin_digits.startswith("65"):
+        brand = "Discover"
+        card_type = "Credit"
+    
+    # JCB
+    elif bin_digits.startswith("35"):
+        brand = "JCB"
+        card_type = "Credit"
+    
+    # Diners Club
+    elif bin_digits.startswith("300") or bin_digits.startswith("301") or bin_digits.startswith("302") or bin_digits.startswith("303") or bin_digits.startswith("304") or bin_digits.startswith("305") or bin_digits.startswith("36"):
+        brand = "Diners Club"
+        card_type = "Credit"
+        
+    # UnionPay
+    elif bin_digits.startswith("62"):
+        brand = "UnionPay"
+        card_type = "Credit/Debit"
+        country = "China"
+        country_code = "CN"
+        
+    # Maestro
+    elif bin_digits.startswith("5018") or bin_digits.startswith("5020") or bin_digits.startswith("5038") or bin_digits.startswith("6304") or bin_digits.startswith("6759") or bin_digits.startswith("676"):
+        brand = "Maestro"
+        card_type = "Debit"
+    
+    bin_info = {
+        "bin": bin_digits,
+        "bank": bank,
+        "country": country,
+        "country_code": country_code,
+        "type": card_type,
+        "brand": brand,
+        "category": card_type,
+        "timestamp": int(time.time())
+    }
+    
+    return bin_info
+
+def preload_common_bins():
+    """
+    Preload the most common BINs into the local database.
+    This helps avoid too many API calls and ensures data availability.
+    """
+    # This would typically be a long list of common BINs
+    # Here we just add a few as an example
+    common_bins = {
+        "400000": {
+            "bin": "400000",
+            "bank": "Visa",
+            "country": "United States",
+            "country_code": "US",
+            "type": "Credit",
+            "brand": "Visa",
+            "category": "Classic",
+            "timestamp": int(time.time())
+        },
+        "411111": {
+            "bin": "411111",
+            "bank": "Chase",
+            "country": "United States",
+            "country_code": "US",
+            "type": "Credit",
+            "brand": "Visa",
+            "category": "Classic",
+            "timestamp": int(time.time())
+        },
+        "521234": {
+            "bin": "521234",
+            "bank": "Mastercard",
+            "country": "United States",
+            "country_code": "US",
+            "type": "Credit",
+            "brand": "Mastercard",
+            "category": "Standard",
+            "timestamp": int(time.time())
+        },
+        "371234": {
+            "bin": "371234",
+            "bank": "American Express",
+            "country": "United States",
+            "country_code": "US",
+            "type": "Credit",
+            "brand": "American Express",
+            "category": "Premium",
+            "timestamp": int(time.time())
+        }
+    }
+    
+    # Check if database file exists
+    if not os.path.exists(BIN_DATABASE_FILE):
+        with open(BIN_DATABASE_FILE, 'w') as f:
+            json.dump(common_bins, f, indent=2)
+        return
+        
+    # Load existing database
+    try:
+        with open(BIN_DATABASE_FILE, 'r') as f:
+            bin_database = json.load(f)
+            
+        # Add common BINs
+        for bin_code, bin_data in common_bins.items():
+            if bin_code not in bin_database:
+                bin_database[bin_code] = bin_data
+                
+        # Save updated database
+        with open(BIN_DATABASE_FILE, 'w') as f:
+            json.dump(bin_database, f, indent=2)
+            
+    except Exception as e:
+        print(f"Error preloading common BINs: {e}")
+
+# Preload common BINs when module is imported
+preload_common_bins()
