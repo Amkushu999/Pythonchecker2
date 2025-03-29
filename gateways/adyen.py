@@ -28,13 +28,9 @@ class AdyenGateway(BaseGateway):
     def check_card(self, cc_number: str, month: str, year: str, cvv: str, **kwargs) -> Dict[str, Any]:
         """Check a credit card with Adyen."""
         try:
-            # Skip the actual API call if we don't have credentials
+            # Return error if API credentials aren't properly configured
             if not self.api_key or not self.merchant_account:
-                # Simulate a response based on the card number
-                if cc_number.startswith('5') and int(cvv) % 2 == 0:
-                    return self.format_response(True, "Card is valid and chargeable", lookup_bin(cc_number[:6]))
-                else:
-                    return self.format_response(False, "Card declined", lookup_bin(cc_number[:6]))
+                return self.format_response(False, "Adyen API credentials not configured")
             
             # Format the expiry date
             expiry_month = month.zfill(2)

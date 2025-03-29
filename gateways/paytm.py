@@ -71,14 +71,9 @@ class PaytmGateway(BaseGateway):
             # Generate a unique customer ID
             cust_id = f"CUST_{uuid.uuid4().hex[:16]}"
             
-            # If Paytm credentials aren't configured, simulate the check
+            # If Paytm credentials aren't configured, return an error
             if not PAYTM_MERCHANT_ID or not PAYTM_MERCHANT_KEY:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with Paytm", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with Paytm (simulated)")
+                return self.format_response(False, "Paytm API credentials not configured")
             
             # Step 1: Initiate a transaction
             # Prepare parameters for transaction initiation

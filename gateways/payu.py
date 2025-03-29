@@ -64,14 +64,9 @@ class PayUGateway(BaseGateway):
             # Generate a unique transaction ID
             txn_id = f"TXN_{int(time.time())}_{uuid.uuid4().hex[:6]}"
             
-            # If PayU credentials aren't configured, simulate the check
+            # If PayU credentials aren't configured, return an error
             if not PAYU_MERCHANT_KEY or not PAYU_MERCHANT_SALT:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with PayU", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with PayU (simulated)")
+                return self.format_response(False, "PayU API credentials not configured")
             
             # Prepare the payment payload
             payload = {

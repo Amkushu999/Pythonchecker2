@@ -9,12 +9,9 @@ from utils.bin_lookup import lookup_bin
 
 logger = logging.getLogger(__name__)
 
-# Import braintree module conditionally
-try:
-    import braintree
-    BRAINTREE_AVAILABLE = True
-except ImportError:
-    BRAINTREE_AVAILABLE = False
+# Import braintree module
+import braintree
+BRAINTREE_AVAILABLE = True
 
 class BraintreeGateway(BaseGateway):
     """Braintree payment gateway implementation."""
@@ -27,11 +24,11 @@ class BraintreeGateway(BaseGateway):
     def _setup_gateway(self) -> Optional[Any]:
         """Set up the Braintree gateway client."""
         if not BRAINTREE_AVAILABLE:
-            logger.warning("Braintree module not available. Using simulation mode.")
+            logger.error("Braintree module not available.")
             return None
         
         if not all([BRAINTREE_MERCHANT_ID, BRAINTREE_PUBLIC_KEY, BRAINTREE_PRIVATE_KEY]):
-            logger.warning("Braintree credentials not set. Using simulation mode.")
+            logger.error("Braintree credentials not set.")
             return None
         
         return braintree.BraintreeGateway(
@@ -48,19 +45,9 @@ class BraintreeGateway(BaseGateway):
         check_type = kwargs.get("check_type", "b3")  # 'b3' or 'vbv'
         
         try:
-            # Simulation mode if gateway not set up
+            # Return error if Braintree gateway is not set up
             if not self.gateway:
-                # Simulate a response based on the card number
-                if check_type == "b3":
-                    if cc_number.startswith('4') and int(cvv) % 2 == 0:
-                        return self.format_response(True, "Card passed B3 verification", lookup_bin(cc_number[:6]))
-                    else:
-                        return self.format_response(False, "Card failed B3 verification", lookup_bin(cc_number[:6]))
-                else:  # vbv
-                    if cc_number.startswith('5') and int(cvv) % 2 == 0:
-                        return self.format_response(True, "Card passed VBV verification", lookup_bin(cc_number[:6]))
-                    else:
-                        return self.format_response(False, "Card failed VBV verification", lookup_bin(cc_number[:6]))
+                return self.format_response(False, "Braintree API credentials not configured")
             
             # Format the expiry date
             expiry_month = month.zfill(2)

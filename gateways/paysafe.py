@@ -76,14 +76,9 @@ class PaysafeGateway(BaseGateway):
                 }
             }
             
-            # If Paysafe credentials aren't configured, simulate the check
+            # If Paysafe credentials aren't configured, return an error
             if not (PAYSAFE_API_KEY or (PAYSAFE_USERNAME and PAYSAFE_PASSWORD)):
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with Paysafe", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with Paysafe (simulated)")
+                return self.format_response(False, "Paysafe API credentials not configured")
             
             # Send authentication request to Paysafe
             url = f"{self.api_url}/accounts/{self.merchant_account_id}/auths"

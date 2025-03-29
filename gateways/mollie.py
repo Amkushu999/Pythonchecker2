@@ -60,14 +60,9 @@ class MollieGateway(BaseGateway):
                 }
             }
             
-            # If Mollie API key isn't configured, simulate the check
+            # If Mollie API key isn't configured, return an error
             if not MOLLIE_API_KEY:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with Mollie", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with Mollie (simulated)")
+                return self.format_response(False, "Mollie API key not configured")
             
             # Create a payment at Mollie
             response = requests.post(f"{self.api_url}/payments", 

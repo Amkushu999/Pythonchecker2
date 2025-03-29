@@ -67,14 +67,9 @@ class SquareGateway(BaseGateway):
                 }
             }
             
-            # If Square API key is not configured, simulate the check
+            # If Square API key is not configured, return an error
             if not SQUARE_ACCESS_TOKEN:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed (simulated)")
+                return self.format_response(False, "Square API key not configured")
             
             # Make API request to Square
             response = requests.post(url, headers=self.headers, json=payload)

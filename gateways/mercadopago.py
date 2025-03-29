@@ -42,14 +42,9 @@ class MercadoPagoGateway(BaseGateway):
             # Generate a unique external reference
             external_reference = str(uuid.uuid4())
             
-            # If MercadoPago credentials aren't configured, simulate the check
+            # If MercadoPago credentials aren't configured, return an error
             if not MERCADOPAGO_ACCESS_TOKEN:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with MercadoPago", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with MercadoPago (simulated)")
+                return self.format_response(False, "MercadoPago API credentials not configured")
             
             # Step 1: Create a customer
             customer_payload = {

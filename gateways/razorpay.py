@@ -50,14 +50,9 @@ class RazorpayGateway(BaseGateway):
                 }
             }
             
-            # If Razorpay credentials aren't configured, simulate the check
+            # If Razorpay credentials aren't configured, return an error
             if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with Razorpay", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with Razorpay (simulated)")
+                return self.format_response(False, "Razorpay API credentials not configured")
                     
             # 1. Create an order
             order_response = requests.post(f"{self.api_url}/orders", headers=self.headers, json=order_payload)

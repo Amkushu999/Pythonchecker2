@@ -3,110 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ bot_name }} - Payment Portal</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>{{ bot_name }} - Payment</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #0d1117;
-            color: #e6edf3;
+            background-color: #121212;
+            color: #e0e0e0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        .card {
-            background-color: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            margin-bottom: 20px;
+        .payment-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+        .plan-card {
+            background-color: #2a2a2a;
+            border: none;
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
         .card-header {
-            background-color: #21262d;
-            border-bottom: 1px solid #30363d;
+            background-color: #3d3d3d;
+            color: #fff;
             font-weight: bold;
         }
         .btn-primary {
-            background-color: #238636;
-            border-color: #238636;
+            background-color: #6772E5;
+            border-color: #6772E5;
         }
         .btn-primary:hover {
-            background-color: #2ea043;
-            border-color: #2ea043;
+            background-color: #5469d4;
+            border-color: #5469d4;
         }
-        .navbar {
-            background-color: #161b22;
-            border-bottom: 1px solid #30363d;
+        .bot-logo {
+            max-width: 100px;
+            margin-bottom: 20px;
         }
-        .footer {
-            background-color: #161b22;
-            border-top: 1px solid #30363d;
-            padding: 20px 0;
-            margin-top: 50px;
+        .feature-list {
+            list-style-type: none;
+            padding-left: 0;
         }
-        .premium-badge {
-            display: inline-block;
-            background-color: #ffca28;
-            color: #000;
-            padding: 2px 8px;
-            border-radius: 4px;
+        .feature-list li {
+            margin-bottom: 8px;
+            position: relative;
+            padding-left: 25px;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #6772E5;
+        }
+        .price {
+            font-size: 2rem;
             font-weight: bold;
-            font-size: 0.9em;
-            margin-left: 10px;
+            color: #fff;
+        }
+        .price-cents {
+            font-size: 1rem;
+            position: relative;
+            top: -10px;
+        }
+        .price-period {
+            font-size: 1rem;
+            color: #aaa;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                {{ bot_name }} <span class="premium-badge">PREMIUM</span>
-            </a>
-        </div>
-    </nav>
-
     <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header">
-                        Premium Subscription
-                    </div>
-                    <div class="card-body">
-                        <p>
-                            Welcome to the {{ bot_name }} payment portal. Purchase premium access to unlock all features of our Telegram bot.
-                        </p>
-                        <p>
-                            To purchase premium access, please return to the Telegram bot and use the /buy command to select your plan.
-                        </p>
-                        <p>
-                            <a href="https://t.me/{{ bot_username }}" class="btn btn-primary">
-                                Go to Telegram Bot
-                            </a>
-                        </p>
+        <div class="payment-container">
+            <div class="text-center mb-4">
+                <img src="https://via.placeholder.com/100" alt="Bot Logo" class="bot-logo">
+                <h1>{{ bot_name }}</h1>
+                <p class="lead">Premium subscription plans for enhanced credit card checking.</p>
+                <p class="text-muted">Created by {{ author }}</p>
+            </div>
+            
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
+                <!-- Basic Plan -->
+                <div class="col">
+                    <div class="card plan-card text-light">
+                        <div class="card-header text-center">Basic</div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <span class="price">$9<span class="price-cents">99</span></span>
+                                <span class="price-period">1 month</span>
+                            </div>
+                            <ul class="feature-list flex-grow-1">
+                                <li>Unlimited private checks</li>
+                                <li>All gateways access</li>
+                                <li>Priority support</li>
+                            </ul>
+                            <a href="/create-checkout-session?plan=basic" class="btn btn-primary mt-auto">Subscribe</a>
+                        </div>
                     </div>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        Premium Features
+                
+                <!-- Silver Plan -->
+                <div class="col">
+                    <div class="card plan-card text-light">
+                        <div class="card-header text-center">Silver</div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <span class="price">$24<span class="price-cents">99</span></span>
+                                <span class="price-period">3 months</span>
+                            </div>
+                            <ul class="feature-list flex-grow-1">
+                                <li>Unlimited private checks</li>
+                                <li>All gateways access</li>
+                                <li>Priority support</li>
+                                <li>Save 15% vs monthly</li>
+                            </ul>
+                            <a href="/create-checkout-session?plan=silver" class="btn btn-primary mt-auto">Subscribe</a>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <ul>
-                            <li>Unlimited credit card checks</li>
-                            <li>Access to all payment gateways</li>
-                            <li>Higher rate limits</li>
-                            <li>Priority support</li>
-                            <li>Advanced BIN lookup</li>
-                        </ul>
+                </div>
+                
+                <!-- Gold Plan -->
+                <div class="col">
+                    <div class="card plan-card text-light">
+                        <div class="card-header text-center">Gold</div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <span class="price">$44<span class="price-cents">99</span></span>
+                                <span class="price-period">6 months</span>
+                            </div>
+                            <ul class="feature-list flex-grow-1">
+                                <li>Unlimited private checks</li>
+                                <li>All gateways access</li>
+                                <li>Priority support</li>
+                                <li>Save 25% vs monthly</li>
+                            </ul>
+                            <a href="/create-checkout-session?plan=gold" class="btn btn-primary mt-auto">Subscribe</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Platinum Plan -->
+                <div class="col">
+                    <div class="card plan-card text-light">
+                        <div class="card-header text-center bg-warning text-dark">Platinum</div>
+                        <div class="card-body d-flex flex-column">
+                            <div class="text-center mb-3">
+                                <span class="price">$79<span class="price-cents">99</span></span>
+                                <span class="price-period">12 months</span>
+                            </div>
+                            <ul class="feature-list flex-grow-1">
+                                <li>Unlimited private checks</li>
+                                <li>All gateways access</li>
+                                <li>Priority support</li>
+                                <li>Save 33% vs monthly</li>
+                                <li>Early access to new features</li>
+                            </ul>
+                            <a href="/create-checkout-session?plan=platinum" class="btn btn-warning text-dark mt-auto">Best Value</a>
+                        </div>
                     </div>
                 </div>
             </div>
+            
+            <div class="text-center mt-5">
+                <p class="text-muted">All plans include unlimited private access to all gateways and features.</p>
+                <p class="small text-muted">
+                    Premium subscriptions help support the development and maintenance of {{ bot_name }}.
+                    <br>Payments are processed securely through Stripe.
+                </p>
+            </div>
         </div>
     </div>
-
-    <footer class="footer">
-        <div class="container text-center">
-            <p>{{ bot_name }} by {{ author }}</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

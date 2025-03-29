@@ -36,7 +36,7 @@ class TwoCheckoutGateway(BaseGateway):
             Authentication hash string
         """
         timestamp = str(int(time.time()))
-        string_to_hash = len(TWOCHECKOUT_SELLER_ID) + TWOCHECKOUT_SELLER_ID + len(timestamp) + timestamp
+        string_to_hash = str(len(TWOCHECKOUT_SELLER_ID)) + TWOCHECKOUT_SELLER_ID + str(len(timestamp)) + timestamp
         return hashlib.md5((string_to_hash + TWOCHECKOUT_SECRET_KEY).encode()).hexdigest()
         
     def check_card(self, cc_number: str, month: str, year: str, cvv: str, **kwargs) -> Dict[str, Any]:
@@ -53,14 +53,9 @@ class TwoCheckoutGateway(BaseGateway):
             if len(year) == 2:
                 year = "20" + year
             
-            # If 2Checkout credentials aren't configured, simulate the check
+            # If 2Checkout credentials aren't configured, return an error
             if not TWOCHECKOUT_API_KEY or not TWOCHECKOUT_SELLER_ID or not TWOCHECKOUT_SECRET_KEY:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with 2Checkout", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with 2Checkout (simulated)")
+                return self.format_response(False, "2Checkout API credentials not configured")
             
             # Prepare the payment payload
             # Using 2Checkout's Authorize Only API

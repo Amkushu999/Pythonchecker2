@@ -76,14 +76,9 @@ class KlarnaGateway(BaseGateway):
                 }
             }
             
-            # If Klarna credentials aren't configured, simulate the check
+            # If Klarna credentials aren't configured, return an error
             if not KLARNA_USERNAME or not KLARNA_PASSWORD:
-                # Simulate success for test numbers
-                if cc_number.startswith(('4111111111111111', '5555555555554444', '378282246310005')):
-                    bin_info = lookup_bin(cc_number[:6])
-                    return self.format_response(True, "Test card verification successful with Klarna", bin_info)
-                else:
-                    return self.format_response(False, "Card verification failed with Klarna (simulated)")
+                return self.format_response(False, "Klarna API credentials not configured")
             
             # Make API request to Klarna
             response = requests.post(self.api_url, headers=self.headers, json=payload)
