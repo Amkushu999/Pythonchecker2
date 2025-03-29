@@ -1,162 +1,149 @@
 """
 PayU gateway integration for CC checking.
 """
-import json
-import logging
-import hashlib
-import requests
-import uuid
+import os
 import time
+import json
+import random
+import requests
+import hashlib
+import uuid
+from datetime import datetime
 from typing import Dict, Any, Optional
 
-from config import PAYU_MERCHANT_KEY, PAYU_MERCHANT_SALT
+from api_keys import PAYU_MERCHANT_KEY, PAYU_MERCHANT_SALT
 from gateways.base import BaseGateway
-from utils.bin_lookup import lookup_bin
-
-logger = logging.getLogger(__name__)
+from utils.bin_lookup import get_bin_info
 
 class PayUGateway(BaseGateway):
     """PayU payment gateway implementation."""
-    
+
     def __init__(self):
         """Initialize the PayU gateway."""
         super().__init__("PayU")
-        # Use test/sandbox API URL
-        self.api_url = "https://test.payu.in/_payment"
         self.merchant_key = PAYU_MERCHANT_KEY
         self.merchant_salt = PAYU_MERCHANT_SALT
-        self.surl = "https://example.com/success"  # Success URL
-        self.furl = "https://example.com/failure"  # Failure URL
+        self.api_base_url = "https://secure.payu.com"
+        self.api_version = "api"
+
+    def _generate_hash(self, data_dict: Dict) -> str:
+        """Generate a hash for PayU API request."""
+        # Keys to be included in the hash, in the correct order
+        hash_sequence = ["key", "txnid", "amount", "productinfo", "firstname", "email"]
         
-    def _generate_hash(self, data: Dict[str, Any]) -> str:
-        """
-        Generate PayU hash for request authentication.
+        # Start with empty hash string
+        hash_string = ""
         
-        Args:
-            data: Dictionary of request parameters
-            
-        Returns:
-            Hash string
-        """
-        # The hash string format is specific to PayU
-        hash_string = (
-            f"{self.merchant_key}|{data['txnid']}|{data['amount']}|{data['productinfo']}|"
-            f"{data['firstname']}|{data['email']}|||||||||||{self.merchant_salt}"
-        )
+        # Add each value from the sequence
+        for key in hash_sequence:
+            hash_string += str(data_dict.get(key, ""))
+            hash_string += "|"
         
-        # Generate SHA512 hash
-        return hashlib.sha512(hash_string.encode()).hexdigest()
+        # Add the salt
+        hash_string += self.merchant_salt
         
+        # Create the hash using SHA512
+        return hashlib.sha512(hash_string.encode('utf-8')).hexdigest()
+
     def check_card(self, cc_number: str, month: str, year: str, cvv: str, **kwargs) -> Dict[str, Any]:
         """Check a credit card with PayU."""
-        # First do the basic validation in the parent class
-        validation_result = super().check_card(cc_number, month, year, cvv, **kwargs)
-        if not validation_result.get("success", False):
+        # Call the parent method to validate card format first
+        validation_result = super().check_card(cc_number, month, year, cvv)
+        if not validation_result["success"]:
             return validation_result
-        
+
+        # If we don't have API keys, return a message
+        if not self.merchant_key or not self.merchant_salt or self.merchant_key == "your_payu_merchant_key_here":
+            return self.format_response(
+                False,
+                "PayU API credentials are not set. Please configure your merchant key and salt.",
+                get_bin_info(cc_number[:6])
+            )
+
         try:
-            # Format month and year correctly
-            month = month.zfill(2)
+            # Prepare a unique transaction ID
+            txn_id = f"TXN{int(time.time())}{random.randint(1000, 9999)}"
             
-            if len(year) == 2:
-                year = "20" + year
-                
-            # Generate a unique transaction ID
-            txn_id = f"TXN_{int(time.time())}_{uuid.uuid4().hex[:6]}"
-            
-            # If PayU credentials aren't configured, return an error
-            if not PAYU_MERCHANT_KEY or not PAYU_MERCHANT_SALT:
-                return self.format_response(False, "PayU API credentials not configured")
-            
-            # Prepare the payment payload
-            payload = {
+            # Prepare required parameters for PayU
+            data = {
                 "key": self.merchant_key,
                 "txnid": txn_id,
-                "amount": "1.00",  # Minimal amount for verification
+                "amount": "1.00",
                 "productinfo": "Card Verification",
                 "firstname": "Test",
-                "lastname": "Customer",
                 "email": "test@example.com",
-                "phone": "9999999999",
-                "address1": "123 Test St",
-                "city": "Test City",
-                "state": "Test State",
-                "country": "Test Country",
-                "zipcode": "123456",
-                "surl": self.surl,
-                "furl": self.furl,
-                "pg": "CC",  # Credit Card payment mode
-                # Card details
-                "bankcode": self._detect_card_type(cc_number),
+                "phone": "1234567890",
+                "surl": "https://www.merchant.com/success",
+                "furl": "https://www.merchant.com/failure",
+                "pg": "CC",
+                "bankcode": "",
                 "ccnum": cc_number,
+                "ccname": "Test User",
                 "ccvv": cvv,
-                "ccname": "Test Customer",
-                "ccexpmon": month,
-                "ccexpyr": year[-2:],  # PayU expects YY format
+                "ccexpmon": month.zfill(2),
+                "ccexpyr": year if len(year) == 4 else f"20{year}",
+                "enforce_paymethod": "creditcard",
+                "action": "verify"  # Use verify option only
             }
             
-            # Generate hash
-            payload["hash"] = self._generate_hash(payload)
+            # Generate hash for the request
+            data["hash"] = self._generate_hash(data)
             
-            # Make API request to PayU
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
+            # Make the request to PayU API
+            response = requests.post(
+                f"{self.api_base_url}/{self.api_version}/verify",
+                data=data,
+                timeout=10
+            )
             
-            # Note: In a real implementation, this would typically be a form POST from the browser
-            # For verification purposes, we're making a direct API call
-            response = requests.post(self.api_url, 
-                                     headers=headers, 
-                                     data=payload)
+            # Parse the response
+            result = response.json()
             
-            # PayU typically responds with a redirect to a payment page or a response page
-            # For card verification, we're checking if the request was accepted by the gateway
-            if response.status_code in (200, 302):
-                # Check if response contains error messages
-                response_text = response.text.lower()
-                
-                if "error" in response_text or "invalid" in response_text:
-                    error_message = "Card verification failed with PayU"
-                    return self.format_response(False, error_message)
-                    
-                # For verification purposes, assume success if no clear error is found
-                bin_info = lookup_bin(cc_number[:6])
-                return self.format_response(True, "Card verification initiated with PayU", bin_info)
+            # Check if the verification was successful
+            if response.status_code == 200 and result.get("status") == "success":
+                return self.format_response(
+                    True,
+                    "Card approved",
+                    get_bin_info(cc_number[:6])
+                )
+            elif "error" in result:
+                error_message = result.get("error_message", "Unknown error")
+                # Check common error messages
+                if "insufficient funds" in error_message.lower():
+                    return self.format_response(
+                        True,
+                        "Card approved (insufficient funds)",
+                        get_bin_info(cc_number[:6])
+                    )
+                elif "card declined" in error_message.lower():
+                    return self.format_response(
+                        False,
+                        f"Card declined: {error_message}",
+                        get_bin_info(cc_number[:6])
+                    )
+                elif "invalid card" in error_message.lower():
+                    return self.format_response(
+                        False,
+                        f"Invalid card: {error_message}",
+                        get_bin_info(cc_number[:6])
+                    )
+                else:
+                    return self.format_response(
+                        False,
+                        f"Error: {error_message}",
+                        get_bin_info(cc_number[:6])
+                    )
             else:
-                # Request failed
-                error_message = "Card verification failed with PayU"
-                return self.format_response(False, error_message)
+                return self.format_response(
+                    False,
+                    "Card verification failed",
+                    get_bin_info(cc_number[:6])
+                )
                 
-        except Exception as e:
-            logger.error(f"Error in PayU gateway: {str(e)}")
+        except requests.RequestException as e:
             return self.handle_error(e)
-    
-    def _detect_card_type(self, cc_number: str) -> str:
-        """
-        Detect the credit card type based on its number pattern.
-        
-        Args:
-            cc_number: The credit card number.
-            
-        Returns:
-            Card type code as expected by PayU.
-        """
-        # Simplified detection based on common patterns
-        if cc_number.startswith('4'):
-            return "VISA"
-        elif cc_number.startswith(('51', '52', '53', '54', '55')):
-            return "MAST"  # MasterCard
-        elif cc_number.startswith(('34', '37')):
-            return "AMEX"
-        elif cc_number.startswith(('300', '301', '302', '303', '304', '305', '36', '38')):
-            return "DINR"  # Diners
-        elif cc_number.startswith(('6011', '644', '645', '646', '647', '648', '649', '65')):
-            return "DISC"  # Discover
-        elif cc_number.startswith(('35')):
-            return "JCB"
-        else:
-            return "VISA"  # Default to VISA if pattern not recognized
-
+        except Exception as e:
+            return self.handle_error(e)
 
 def check_card(cc_number: str, month: str, year: str, cvv: str, **kwargs) -> Dict[str, Any]:
     """Check a credit card with PayU gateway."""

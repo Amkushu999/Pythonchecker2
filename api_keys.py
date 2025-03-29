@@ -65,3 +65,17 @@ MERCADOPAGO_ACCESS_TOKEN = os.environ.get('MERCADOPAGO_ACCESS_TOKEN')
 
 # BIN database API keys
 BIN_LOOKUP_API_KEY = os.environ.get('BIN_LOOKUP_API_KEY')
+
+# Clover configuration
+CLOVER_API_KEY = os.environ.get('CLOVER_API_KEY')
+CLOVER_MERCHANT_ID = os.environ.get('CLOVER_MERCHANT_ID')
+
+# Square configuration
+SQUARE_API_KEY = os.environ.get('SQUARE_API_KEY')
+SQUARE_LOCATION_ID = os.environ.get('SQUARE_LOCATION_ID')
+SQUARE_APPLICATION_ID = os.environ.get('SQUARE_APPLICATION_ID')
+
+# PayU configuration
+PAYU_MERCHANT_KEY = os.environ.get('PAYU_MERCHANT_KEY')
+PAYU_MERCHANT_SALT = os.environ.get('PAYU_MERCHANT_SALT')
+PAYU_ENVIRONMENT = os.environ.get('PAYU_ENVIRONMENT', 'test')

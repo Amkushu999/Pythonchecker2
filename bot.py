@@ -33,6 +33,11 @@ from handlers import (
     howpm_command,
     howgp_command
 )
+from handlers.group import (
+    new_member_handler,
+    left_member_handler,
+    send_group_welcome
+)
 from handlers.admin import (
     admin_handler,
     add_credits_command,
@@ -275,6 +280,10 @@ def setup_bot(application):
     # Add handlers for premium approval/rejection
     application.add_handler(CallbackQueryHandler(approve_premium_handler, pattern="^approve_premium_"))
     application.add_handler(CallbackQueryHandler(reject_premium_handler, pattern="^reject_premium_"))
+    
+    # Group handlers
+    application.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, new_member_handler))
+    application.add_handler(MessageHandler(filters.StatusUpdate.LEFT_CHAT_MEMBER, left_member_handler))
     
     # Error handler for better user experience
     application.add_error_handler(error_handler)

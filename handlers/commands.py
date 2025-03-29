@@ -15,6 +15,7 @@ from utils.helper import (
     require_credits,
     check_rate_limit
 )
+from config import BOT_USERNAME
 from utils.card_utils import (
     validate_cc_format,
     generate_random_cc,
@@ -301,64 +302,67 @@ async def show_helper(query) -> None:
     is_admin = query.from_user.id in ADMIN_USER_IDS
     
     message = (
-        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
-        f"<b>AVAILABLE COMMANDS ✨</b>\n\n"
+        f"<b>♦️ Helper Commands of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+        f"<b>♦️ Status:</b> <code>✅ ACTIVE</code>\n\n"
+        
         f"<b>👤 Account Management:</b>\n"
-        f"• <code>/start</code> - Start the bot\n"
-        f"• <code>/register</code> - Create an account\n" 
-        f"• <code>/id</code> - Get your user ID\n"
-        f"• <code>/info</code> - View account info\n"
-        f"• <code>/credits</code> - Check balance\n\n"
+        f"1. Start Bot: <code>/start</code> ✅\n"
+        f"2. Create Account: <code>/register</code> ✅\n" 
+        f"3. User ID: <code>/id</code> ✅\n"
+        f"4. Account Info: <code>/info</code> ✅\n"
+        f"5. Credit Balance: <code>/credits</code> ✅\n\n"
         
         f"<b>💳 Card Checker Gates:</b>\n"
-        f"• <code>/stripe</code> - Stripe Gateway\n"
-        f"• <code>/adyen</code> - Adyen Gateway\n"
-        f"• <code>/braintree</code> - Braintree\n"
-        f"• <code>/paypal</code> - PayPal\n"
-        f"• <code>/authnet</code> - Authorize.Net\n\n"
+        f"1. Stripe Gateway: <code>/stripe cc|mm|yy|cvv</code> ✅\n"
+        f"2. Adyen Gateway: <code>/adyen cc|mm|yy|cvv</code> ✅\n"
+        f"3. Braintree B3: <code>/b3 cc|mm|yy|cvv</code> ✅\n"
+        f"4. Braintree VBV: <code>/vbv cc|mm|yy|cvv</code> ✅\n"
+        f"5. PayPal Auth: <code>/paypal cc|mm|yy|cvv</code> ✅\n\n"
         
-        f"<b>🛠️ Tools & Generator:</b>\n"
-        f"• <code>/gen</code> - CC Generator\n"
-        f"• <code>/fake</code> - Address Generator\n"
-        f"• <code>/bin</code> - BIN Lookup\n\n"
+        f"<b>🛠️ Generator Tools:</b>\n"
+        f"1. CC Generator: <code>/gen BIN AMOUNT</code> ✅\n"
+        f"2. Address Generator: <code>/fake</code> ✅\n"
+        f"3. BIN Lookup: <code>/bin 440393</code> ✅\n\n"
         
-        f"<b>💼 Premium Features:</b>\n"
-        f"• <code>/buy</code> - Buy Premium\n"
-        f"• <code>/redeem CODE</code> - Redeem Code\n"
-        f"• <code>/howpm</code> - Premium Benefits\n"
-        f"• <code>/howcrd</code> - Credits System\n\n"
+        f"<b>💎 Premium Features:</b>\n"
+        f"1. Buy Premium: <code>/buy</code> ✅\n"
+        f"2. Redeem Code: <code>/redeem CODE</code> ✅\n"
+        f"3. Premium Info: <code>/howpm</code> ✅\n"
+        f"4. Credits System: <code>/howcrd</code> ✅\n\n"
         
-        f"<b>🔧 Other:</b>\n"
-        f"• <code>/howgp</code> - Group Usage\n"
-        f"• <code>/ping</code> - Check Status\n\n"
+        f"<b>📢 Other Commands:</b>\n"
+        f"1. Group Usage: <code>/howgp</code> ✅\n"
+        f"2. Bot Status: <code>/ping</code> ✅\n\n"
     )
     
     # Add admin commands if user is an admin
     if is_admin:
         message += (
-            f"<b>🔑 Admin Commands:</b>\n\n"
-            f"<b>User Management:</b>\n"
-            f"• <code>/addcredits USER_ID AMOUNT</code> - Add credits\n"
-            f"• <code>/addpremium USER_ID DAYS</code> - Add premium\n"
-            f"• <code>/ban USER_ID REASON</code> - Ban user\n"
-            f"• <code>/unban USER_ID</code> - Unban user\n"
-            f"• <code>/banlist</code> - Show banned users\n\n"
+            f"<b>🔑 Admin Commands of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+            f"<b>🔑 Status:</b> <code>✅ ACTIVE</code>\n\n"
             
-            f"<b>System Management:</b>\n"
-            f"• <code>/lock</code> - Lock system\n"
-            f"• <code>/unlock</code> - Unlock system\n"
-            f"• <code>/maintenance [on/off]</code> - Maintenance mode\n"
-            f"• <code>/mincredits AMOUNT</code> - Min credits for private\n\n"
+            f"<b>👥 User Management:</b>\n"
+            f"1. Add Credits: <code>/addcredits USER_ID AMOUNT</code> ✅\n"
+            f"2. Add Premium: <code>/addpremium USER_ID DAYS</code> ✅\n"
+            f"3. Ban User: <code>/ban USER_ID REASON</code> ✅\n"
+            f"4. Unban User: <code>/unban USER_ID</code> ✅\n"
+            f"5. Banned List: <code>/banlist</code> ✅\n\n"
             
-            f"<b>Group Management:</b>\n"
-            f"• <code>/addgroup GROUP_ID</code> - Authorize group\n"
-            f"• <code>/removegroup GROUP_ID</code> - Remove group\n"
-            f"• <code>/grouplist</code> - List groups\n\n"
+            f"<b>⚙️ System Management:</b>\n"
+            f"1. Lock System: <code>/lock</code> ✅\n"
+            f"2. Unlock System: <code>/unlock</code> ✅\n"
+            f"3. Maintenance: <code>/maintenance [on/off]</code> ✅\n"
+            f"4. Min Credits: <code>/mincredits AMOUNT</code> ✅\n\n"
             
-            f"<b>Code Management:</b>\n"
-            f"• <code>/gencode CREDITS DAYS</code> - Generate code\n"
-            f"• <code>/stats</code> - Show system stats\n"
-            f"• <code>/broadcast MESSAGE</code> - Send to all users\n\n"
+            f"<b>👥 Group Management:</b>\n"
+            f"1. Add Group: <code>/addgroup GROUP_ID</code> ✅\n"
+            f"2. Remove Group: <code>/removegroup GROUP_ID</code> ✅\n"
+            f"3. Group List: <code>/grouplist</code> ✅\n\n"
+            
+            f"<b>🛠️ Other Tools:</b>\n"
+            f"1. Generate Code: <code>/gencode CREDITS DAYS</code> ✅\n"
+            f"2. System Stats: <code>/stats</code> ✅\n"
+            f"3. Broadcast: <code>/broadcast MESSAGE</code> ✅\n\n"
         )
     
     message += f"<i>Use these commands to manage your account and get help</i>"
@@ -390,11 +394,17 @@ async def show_gateway_instructions(query, gateway: str) -> None:
     }.get(gateway, gateway.capitalize())
     
     message = (
-        f"<b>🔍 {gateway_name} Gate Instructions</b>\n\n"
-        f"<b>Format:</b> <code>XXXXXXXXXXXXXXXX|MM|YYYY|CVV</code>\n"
-        f"<b>Example:</b> <code>4111111111111111|01|2025|123</code>\n\n"
-        f"<i>Simply send your card in the format above to check it.</i>\n"
-        f"<b>Cost:</b> 1 credit per check"
+        f"<b>🔹 {gateway_name} Gate of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+        f"<b>🔹 Status:</b> <code>✅ ACTIVE</code>\n\n"
+        f"<b>FORMAT INSTRUCTIONS</b>\n\n"
+        f"<b>• Format:</b> <code>XXXXXXXXXXXXXXXX|MM|YYYY|CVV</code>\n"
+        f"<b>• Example:</b> <code>4111111111111111|01|2025|123</code>\n\n"
+        f"<b>USAGE OPTIONS</b>\n\n"
+        f"<b>• Command:</b> <code>/{gateway.split('_')[0]} cc|mm|yy|cvv</code>\n"
+        f"<b>• Direct:</b> Simply send the card in the format above\n\n"
+        f"<b>• Cost:</b> 1 credit per check\n"
+        f"<b>• Status:</b> ✅ Working\n\n"
+        f"<i>Results will be displayed with BIN information</i>"
     )
     
     keyboard = [
@@ -467,6 +477,20 @@ async def process_cc_check(update: Update, context: CallbackContext, message_tex
 @check_rate_limit
 async def check_with_gateway(update: Update, context: CallbackContext, gateway: str) -> None:
     """Check a card with a specific gateway."""
+    gateway_name = {
+        "stripe": "Stripe Auth",
+        "adyen": "Adyen Auth",
+        "braintree_b3": "Braintree B3",
+        "braintree_vbv": "Braintree VBV",
+        "otp": "OTP Lookup",
+        "paypal": "PayPal Auth",
+        "authnet": "Authorize.Net Auth",
+        "shopify": "Shopify Auth",
+        "worldpay": "WorldPay Auth",
+        "checkout": "Checkout.com Auth",
+        "cybersource": "CyberSource Auth"
+    }.get(gateway, gateway.capitalize())
+    
     # If this is from a command, expect the card in args
     if update.message and context.args:
         card_data = " ".join(context.args)
@@ -474,13 +498,21 @@ async def check_with_gateway(update: Update, context: CallbackContext, gateway: 
     else:
         # Send instructions on how to use the gateway
         message = (
-            f"To check a card with this gateway, send it in the following format:\n\n"
-            f"XXXXXXXXXXXXXXXX|MM|YYYY|CVV\n\n"
-            f"Example: 4111111111111111|01|2025|123"
+            f"<b>🔹 {gateway_name} Gate of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+            f"<b>🔹 Status:</b> <code>✅ ACTIVE</code>\n\n"
+            f"<b>FORMAT INSTRUCTIONS</b>\n\n"
+            f"<b>• Format:</b> <code>XXXXXXXXXXXXXXXX|MM|YYYY|CVV</code>\n"
+            f"<b>• Example:</b> <code>4111111111111111|01|2025|123</code>\n\n"
+            f"<b>USAGE OPTIONS</b>\n\n"
+            f"<b>• Command:</b> <code>/{gateway.split('_')[0]} cc|mm|yy|cvv</code>\n"
+            f"<b>• Direct:</b> Simply send the card in the format above\n\n"
+            f"<b>• Cost:</b> 1 credit per check\n"
+            f"<b>• Status:</b> ✅ Working\n\n"
+            f"<i>Simply reply with your card in the correct format</i>"
         )
         
         if update.message:
-            await update.message.reply_text(message)
+            await update.message.reply_text(message, parse_mode="HTML")
 
 def format_check_response(cc: str, month: str, year: str, cvv: str, result: Dict, gateway: str) -> str:
     """
@@ -609,21 +641,28 @@ async def info_command(update: Update, context: CallbackContext) -> None:
     if user["is_premium"] and user["premium_expiry"]:
         premium_expiry = time.strftime("%d-%m-%Y", time.localtime(user["premium_expiry"]))
     
+    # Get username if available
+    username = update.effective_user.username or "None"
+    
+    # Format message with new style
     message = (
-        f"🔓 User ID: {user_id}\n"
-        f"🔒 Profile Link: [Profile Link](tg://user?id={user_id})\n"
-        f"🔒 TG Restrictions: False\n"
-        f"🔴 TG Scamtag: False\n"
-        f"⭐ TG Premium: False\n"
-        f"🔶 Status: {'PREMIUM' if user['is_premium'] else 'FREE'}\n"
-        f"💰 Credit: {user['credits']}\n"
-        f"📝 Plan: {'Premium' if user['is_premium'] else 'N/A'}\n"
-        f"📅 Plan Expiry: {premium_expiry}\n"
-        f"🔑 Keys Redeemed: {len(user['redeemed_codes'])}\n"
-        f"📆 Registered At: {registered_at}\n"
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>USER INFO</code>\n\n"
+        f"<b>ACCOUNT DETAILS</b>\n\n"
+        f"<b>• User ID:</b> <code>{user_id}</code>\n"
+        f"<b>• Username:</b> @{username}\n"
+        f"<b>• Status:</b> {'PREMIUM 💎' if user['is_premium'] else 'FREE'}\n"
+        f"<b>• Credits:</b> {user['credits']}\n"
+        f"<b>• Joined:</b> {registered_at}\n\n"
+        
+        f"<b>PREMIUM INFO</b>\n\n"
+        f"<b>• Plan:</b> {'Premium' if user['is_premium'] else 'N/A'}\n"
+        f"<b>• Expires:</b> {premium_expiry}\n"
+        f"<b>• Codes Used:</b> {len(user['redeemed_codes'])}\n\n"
+        
+        f"<i>Use /credits to check your balance</i>"
     )
     
-    await update.message.reply_text(message)
+    await update.message.reply_text(message, parse_mode="HTML")
 
 @require_registration
 async def credits_command(update: Update, context: CallbackContext) -> None:
@@ -631,10 +670,19 @@ async def credits_command(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
     user = db.get_user(user_id)
     
-    await update.message.reply_text(
-        f"💰 Your current credit balance: {user['credits']} credits\n\n"
-        f"Use /howcrd to learn more about the credit system."
+    message = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>BALANCE</code>\n\n"
+        f"<b>CREDIT BALANCE</b>\n\n"
+        f"<b>• Current Balance:</b> <code>{user['credits']}</code> credits\n\n"
+        f"<b>PRICING INFO</b>\n\n"
+        f"<b>• CC Check:</b> 1 credit\n"
+        f"<b>• Address Generate:</b> 1 credit\n"
+        f"<b>• CC Generate:</b> 1 credit\n"
+        f"<b>• Scraping Tools:</b> 5 credits\n\n"
+        f"<i>Use /buy to purchase premium access</i>"
     )
+    
+    await update.message.reply_text(message, parse_mode="HTML")
 
 @require_registration
 async def buy_command(update: Update, context: CallbackContext) -> None:
@@ -654,37 +702,38 @@ async def buy_command(update: Update, context: CallbackContext) -> None:
     
     # Create premium plans message
     message = (
-        f"💎 <b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚 Premium Plans</b> 💎\n\n"
-        f"<i>Choose a plan that suits your needs:</i>\n\n"
-        f"💠 <b>Basic Tier (1 month)</b>\n"
-        f"Price: <code>${plan_details['basic']['price']}</code>\n"
-        f"• Unlimited private checks\n"
-        f"• All gateways access\n"
-        f"• Priority support\n\n"
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>PREMIUM PLANS</code>\n\n"
+        f"<b>PREMIUM SUBSCRIPTION OPTIONS</b>\n\n"
         
-        f"🔶 <b>Silver Tier (3 months)</b>\n"
-        f"Price: <code>${plan_details['silver']['price']}</code>\n"
-        f"• Unlimited private checks\n"
-        f"• All gateways access\n"
-        f"• Priority support\n"
-        f"• Save 15% vs monthly\n\n"
+        f"<b>💠 BASIC - 1 MONTH</b>\n"
+        f"<b>• Price:</b> <code>${plan_details['basic']['price']}</code>\n"
+        f"<b>• Features:</b>\n"
+        f"  - Unlimited private checks\n"
+        f"  - All gateway access\n"
+        f"  - Higher limits\n\n"
         
-        f"🌟 <b>Gold Tier (6 months)</b>\n"
-        f"Price: <code>${plan_details['gold']['price']}</code>\n"
-        f"• Unlimited private checks\n"
-        f"• All gateways access\n"
-        f"• Priority support\n"
-        f"• Save 25% vs monthly\n\n"
+        f"<b>🔶 SILVER - 3 MONTHS</b>\n"
+        f"<b>• Price:</b> <code>${plan_details['silver']['price']} (15% discount)</code>\n"
+        f"<b>• Features:</b>\n"
+        f"  - All Basic features\n"
+        f"  - Priority support\n"
+        f"  - Bulk checking\n\n"
         
-        f"💎 <b>Platinum Tier (12 months)</b>\n"
-        f"Price: <code>${plan_details['platinum']['price']}</code>\n"
-        f"• Unlimited private checks\n"
-        f"• All gateways access\n"
-        f"• Priority support\n"
-        f"• Save 33% vs monthly\n"
-        f"• Early access to new features\n\n"
+        f"<b>🌟 GOLD - 6 MONTHS</b>\n"
+        f"<b>• Price:</b> <code>${plan_details['gold']['price']} (25% discount)</code>\n"
+        f"<b>• Features:</b>\n"
+        f"  - All Silver features\n"
+        f"  - Extended history\n"
+        f"  - Gateway updates\n\n"
         
-        f"<i>To purchase a premium plan, click the button below:</i>"
+        f"<b>💎 PLATINUM - 12 MONTHS</b>\n"
+        f"<b>• Price:</b> <code>${plan_details['platinum']['price']} (33% discount)</code>\n"
+        f"<b>• Features:</b>\n"
+        f"  - All Gold features\n"
+        f"  - Early new features\n"
+        f"  - Advanced BIN lookup\n\n"
+        
+        f"<i>Click a plan below to purchase:</i>"
     )
     
     # Get admin username from config
@@ -770,9 +819,17 @@ async def process_payment(query, plan: str, user_id: int) -> None:
 
 async def ping_command(update: Update, context: CallbackContext) -> None:
     """Handle the /ping command to check bot status."""
-    await update.message.reply_text(
-        f"🟢 Bot is online and operational!\n"
-        f"Latency: 0.3s"
+    import time
+    start_time = time.time()
+    message = await update.message.reply_text("Pinging...")
+    end_time = time.time()
+    ping_time = round((end_time - start_time) * 1000, 2)  # Convert to ms with 2 decimal places
+    
+    # Format as shown in the screenshot
+    await message.edit_text(
+        f"🤖 Bot Name: HUMBL3 CH3CK4R\n"
+        f"✅ Bot Status: Running\n" 
+        f"📊 Ping: {ping_time} ms"
     )
 
 @require_registration
@@ -821,8 +878,23 @@ async def gen_command(update: Update, context: CallbackContext) -> None:
                 card = generate_random_cc(bin_prefix)
                 cards.append(f"{card['cc']}|{card['month']}|{card['year']}|{card['cvv']}")
         
-        response = "🔢 Generated Cards:\n\n" + "\n".join(cards)
-        await update.message.reply_text(response)
+        # Format in the styled way matching other commands
+        response = (
+            f"<b>♦️ CC Generator of HUMBL3 CH3CK4R</b>\n"
+            f"<b>♦️ Status:</b> <code>✅ ACTIVE</code>\n\n"
+            f"<b>GENERATED CARDS:</b>\n\n"
+        )
+        
+        # Add each card with formatting
+        for i, card in enumerate(cards, 1):
+            response += f"<code>{i}. {card}</code>\n"
+        
+        response += f"\n<b>• Generated:</b> {amount} cards\n"
+        response += f"<b>• Credits used:</b> 1\n"
+        response += f"<b>• Status:</b> ✅ Success\n\n"
+        response += f"<i>Use a card with any gateway by sending it directly</i>"
+        
+        await update.message.reply_text(response, parse_mode="HTML")
     
     except ValueError:
         await update.message.reply_text("Invalid arguments. Please provide a valid BIN and amount.")
@@ -850,17 +922,23 @@ async def fake_us_command(update: Update, context: CallbackContext, country_code
     address = generate_fake_address(country_code)
     
     response = (
-        f"📍 Fake {address['country']} Address:\n\n"
-        f"👤 Name: {address['name']}\n"
-        f"🏠 Address: {address['street']}\n"
-        f"🏙️ City: {address['city']}\n"
-        f"🏛️ State/Region: {address['state']}\n"
-        f"📮 ZIP/Postal Code: {address['zip']}\n"
-        f"📱 Phone: {address['phone']}\n"
-        f"📧 Email: {address['email']}"
+        f"<b>♦️ Address Generator of HUMBL3 CH3CK4R</b>\n"
+        f"<b>♦️ Status:</b> <code>✅ ACTIVE</code>\n\n"
+        f"<b>GENERATED {address['country']} ADDRESS</b>\n\n"
+        f"<b>• Name:</b> {address['name']}\n"
+        f"<b>• Street:</b> {address['street']}\n"
+        f"<b>• City:</b> {address['city']}\n"
+        f"<b>• State:</b> {address['state']}\n"
+        f"<b>• ZIP:</b> {address['zip']}\n"
+        f"<b>• Phone:</b> {address['phone']}\n"
+        f"<b>• Email:</b> {address['email']}\n\n"
+        f"<b>• Country:</b> {address['country']}\n"
+        f"<b>• Credits used:</b> 1\n"
+        f"<b>• Status:</b> ✅ Success\n\n"
+        f"<i>Use this address with any payment gateway</i>"
     )
     
-    await update.message.reply_text(response)
+    await update.message.reply_text(response, parse_mode="HTML")
 
 @require_registration
 @require_credits(5)
@@ -924,45 +1002,80 @@ async def scrsk_command(update: Update, context: CallbackContext) -> None:
 @require_registration
 async def howcrd_command(update: Update, context: CallbackContext) -> None:
     """Handle the /howcrd command to explain the credit system."""
-    await update.message.reply_text(
-        f"💰 Credit System Explanation:\n\n"
-        f"1. Each new user gets 100 free credits\n"
-        f"2. Credits are used for various operations:\n"
-        f"   - CC Check: 1 credit\n"
-        f"   - Generate CC: 1 credit\n"
-        f"   - Fake Address: 1 credit\n"
-        f"   - Scraper tools: 5 credits\n\n"
-        f"3. Get more credits by:\n"
-        f"   - Purchasing premium plans\n"
-        f"   - Redeeming gift codes\n"
-        f"   - Special promotions\n\n"
-        f"Check your balance with /credits"
+    message = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CREDIT SYSTEM</code>\n\n"
+        f"<b>HOW CREDITS WORK</b>\n\n"
+        f"<b>• Initial Credits:</b> Each new user gets 100 free credits\n"
+        f"<b>• Free Limit:</b> When credits run out, use bot in groups\n"
+        f"<b>• Premium:</b> Unlimited private usage for premium users\n\n"
+        
+        f"<b>CREDIT COSTS</b>\n\n"
+        f"<b>• CC Check:</b> 1 credit per card check\n"
+        f"<b>• CC Generate:</b> 1 credit per generation\n"
+        f"<b>• Address Gen:</b> 1 credit per address\n"
+        f"<b>• Scraper Tools:</b> 5 credits per use\n\n"
+        
+        f"<b>GET MORE CREDITS</b>\n\n"
+        f"<b>• Buy Premium:</b> Use /buy command\n"
+        f"<b>• Redeem Codes:</b> Use /redeem CODE\n"
+        f"<b>• Invite Friends:</b> Share with others\n\n"
+        
+        f"<i>Check your balance with /credits</i>"
     )
+    
+    await update.message.reply_text(message, parse_mode="HTML")
 
 @require_registration
 async def howpm_command(update: Update, context: CallbackContext) -> None:
     """Handle the /howpm command to explain premium benefits."""
-    await update.message.reply_text(
-        f"💎 Premium Benefits:\n\n"
-        f"1. Higher rate limits (30 checks/minute vs 10)\n"
-        f"2. Access to all premium gates\n"
-        f"3. Priority support\n"
-        f"4. Bulk checking capability\n"
-        f"5. Advanced BIN lookup\n"
-        f"6. Extended history storage\n\n"
-        f"Get premium with /buy command"
+    message = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>PREMIUM</code>\n\n"
+        f"<b>PREMIUM BENEFITS</b>\n\n"
+        f"<b>• Unlimited Access:</b> Use privately without credit limits\n"
+        f"<b>• Higher Limits:</b> 30 checks/minute (vs 10 for free)\n"
+        f"<b>• All Gateways:</b> Access to premium gateways\n\n"
+        
+        f"<b>ADVANCED FEATURES</b>\n\n"
+        f"<b>• Priority Support:</b> Get help faster\n"
+        f"<b>• Bulk Checking:</b> Check multiple cards at once\n"
+        f"<b>• Advanced BIN:</b> Detailed BIN lookups\n"
+        f"<b>• History:</b> Extended check history\n\n"
+        
+        f"<b>PREMIUM PLANS</b>\n\n"
+        f"<b>• Basic:</b> $9.99/month\n"
+        f"<b>• Silver:</b> $24.99/3 months (save 15%)\n"
+        f"<b>• Gold:</b> $44.99/6 months (save 25%)\n"
+        f"<b>• Platinum:</b> $79.99/year (save 33%)\n\n"
+        
+        f"<i>Use /buy to purchase premium access</i>"
     )
+    
+    await update.message.reply_text(message, parse_mode="HTML")
 
 @require_registration
 async def howgp_command(update: Update, context: CallbackContext) -> None:
     """Handle the /howgp command to explain group usage."""
-    await update.message.reply_text(
-        f"👥 Using the Bot in Groups:\n\n"
-        f"1. Add the bot to your group\n"
-        f"2. Make the bot an admin with these permissions:\n"
-        f"   - Delete messages\n"
-        f"   - Pin messages\n\n"
-        f"3. Users must be registered individually\n"
-        f"4. Credits are tracked per user, not per group\n\n"
-        f"Note: Premium features work in groups too"
+    message = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>GROUP USAGE</code>\n\n"
+        f"<b>ADDING BOT TO GROUP</b>\n\n"
+        f"<b>• Step 1:</b> Add @{BOT_USERNAME} to your group\n"
+        f"<b>• Step 2:</b> Make the bot an admin\n"
+        f"<b>• Step 3:</b> Required permissions:\n"
+        f"  - Delete Messages\n"
+        f"  - Pin Messages\n\n"
+        
+        f"<b>GROUP RULES</b>\n\n"
+        f"<b>• Registration:</b> Users must register individually\n"
+        f"<b>• Free Access:</b> Users can use bot when out of credits\n"
+        f"<b>• Credits:</b> Credits tracked per individual user\n"
+        f"<b>• Premium:</b> Premium features work in groups\n\n"
+        
+        f"<b>GROUP BENEFITS</b>\n\n"
+        f"<b>• Public Access:</b> All members can use the bot\n"
+        f"<b>• New Members:</b> Automatic welcome & registration\n"
+        f"<b>• Community:</b> Share results with the group\n\n"
+        
+        f"<i>Need help? Contact @amkuush</i>"
     )
+    
+    await update.message.reply_text(message, parse_mode="HTML")
