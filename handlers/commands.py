@@ -16,10 +16,13 @@ from utils.helper import (
     check_rate_limit
 )
 from config import BOT_USERNAME
-from utils.card_utils import (
-    validate_cc_format,
+from utils import (
+    luhn_checksum,
+    validate_credit_card,
     generate_random_cc,
-    generate_fake_address
+    generate_cards_with_bin,
+    generate_fake_address,
+    get_bin_info
 )
 from gateways import (
     check_card_stripe,
@@ -438,10 +441,11 @@ async def process_cc_check(update: Update, context: CallbackContext, message_tex
         year = cc_parts[2].strip()
         cvv = cc_parts[3].strip()
         
-        # Validate format
-        if not validate_cc_format(cc_number, month, year, cvv):
+        # Validate format using the new function with Luhn check
+        is_valid, error_message = validate_credit_card(cc_number, month, year, cvv)
+        if not is_valid:
             await update.message.reply_text(
-                "Invalid card details. Please check the format and try again."
+                f"Invalid card details: {error_message}"
             )
             return
         

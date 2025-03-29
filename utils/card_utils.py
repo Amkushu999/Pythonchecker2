@@ -1,559 +1,440 @@
 """
-Credit card utilities for validation and generation.
+Credit card utility functions for validation and generation.
+Includes Luhn algorithm implementation for CC validation and generation.
 """
-import re
 import random
-import string
-from typing import Dict, Union, List, Optional
+import re
+from typing import Dict, Any, List, Union, Tuple
 
-def luhn_check(card_number: str) -> bool:
+from utils.bin_lookup import get_bin_info
+
+def luhn_checksum(card_number: str) -> bool:
     """
-    Validate a card number using the Luhn algorithm (mod 10).
-    
-    This is a more comprehensive and robust implementation of the Luhn algorithm
-    that handles various edge cases and follows the official specification.
+    Validate a credit card number using the Luhn algorithm.
     
     Args:
-        card_number: The card number to validate.
+        card_number: The credit card number to validate (string without spaces)
         
     Returns:
-        True if the card number is valid according to the Luhn algorithm, False otherwise.
+        True if valid per Luhn algorithm, False otherwise
     """
-    # Remove any spaces, dashes, or other separators
-    card_number = re.sub(r'[\s\-_+.]', '', card_number)
+    # Remove any spaces or dashes
+    card_number = card_number.replace(' ', '').replace('-', '')
     
-    # Check if the card number contains only digits and has at least 2 digits
-    if not card_number.isdigit() or len(card_number) < 2:
+    # Check if the card_number contains only digits
+    if not card_number.isdigit():
         return False
+        
+    # Convert to list of integers
+    digits = [int(digit) for digit in card_number]
     
-    # Convert to integers (work from right to left)
-    digits = [int(d) for d in card_number]
-    
-    # Check digit is the rightmost digit
-    check_digit = digits.pop()
-    
-    # Reverse the remaining digits
-    digits.reverse()
-    
-    # Double the value of alternate digits (those in odd positions - 0-indexed)
-    for i in range(0, len(digits), 2):
+    # Double every second digit from right to left
+    for i in range(len(digits) - 2, -1, -2):
         digits[i] *= 2
-        # If doubling results in a number greater than 9, subtract 9
         if digits[i] > 9:
             digits[i] -= 9
-    
-    # Add check digit back to the list
-    digits.reverse()  # Reverse back to original order
-    digits.append(check_digit)
-    
+            
     # Sum all digits
     total = sum(digits)
     
-    # If the sum is divisible by 10, the card number is valid
+    # Check if the sum is divisible by 10
     return total % 10 == 0
-    
-def is_valid_card_number(card_number: str) -> bool:
+
+def generate_luhn_digit(partial_card_number: str) -> str:
     """
-    Perform a comprehensive validation of a credit card number.
-    
-    This includes:
-    1. Basic format validation (digits, length)
-    2. BIN pattern checking
-    3. Luhn algorithm verification
+    Generate the Luhn check digit for a partial card number.
     
     Args:
-        card_number: The card number to validate.
+        partial_card_number: The partial credit card number without the check digit
         
     Returns:
-        True if the card number passes all validation checks, False otherwise.
+        The check digit as a string
     """
-    # Remove any spaces, dashes, or other separators
-    clean_number = re.sub(r'[\s\-_+.]', '', card_number)
+    # Remove any spaces or dashes
+    partial_card_number = partial_card_number.replace(' ', '').replace('-', '')
     
-    # Check if the number contains only digits
-    if not clean_number.isdigit():
-        return False
+    # Verify the partial card number contains only digits
+    if not partial_card_number.isdigit():
+        raise ValueError("Card number must contain only digits")
+        
+    # Convert to list of integers
+    digits = [int(digit) for digit in partial_card_number]
     
-    # Check length (valid card numbers are 13-19 digits)
-    if len(clean_number) < 13 or len(clean_number) > 19:
-        return False
+    # Append a placeholder for the check digit
+    digits.append(0)
     
-    # Check BIN patterns
-    first_digit = clean_number[0]
-    first_two_digits = clean_number[:2]
-    first_four_digits = clean_number[:4]
+    # Double every second digit from right to left
+    for i in range(len(digits) - 2, -1, -2):
+        digits[i] *= 2
+        if digits[i] > 9:
+            digits[i] -= 9
+            
+    # Calculate the check digit
+    total = sum(digits)
+    check_digit = (10 - (total % 10)) % 10
     
-    # Visa: Starts with 4, length 13, 16, or 19
-    # Mastercard: Starts with 51-55 or 2221-2720, length 16
-    # American Express: Starts with 34 or 37, length 15
-    # Discover: Starts with 6011, 622126-622925, 644-649, or 65, length 16-19
-    # Diners Club: Starts with 300-305, 36, or 38-39, length 14-19
-    # JCB: Starts with 3528-3589, length 16-19
-    # UnionPay: Starts with 62, length 16-19
-    
-    valid_bin = False
-    
-    if first_digit == '4' and len(clean_number) in [13, 16, 19]:
-        # Visa
-        valid_bin = True
-    elif first_two_digits in ['51', '52', '53', '54', '55'] and len(clean_number) == 16:
-        # Mastercard (standard range)
-        valid_bin = True
-    elif (first_two_digits == '22' and first_four_digits >= '2221' and first_four_digits <= '2720') and len(clean_number) == 16:
-        # Mastercard (expanded range)
-        valid_bin = True
-    elif first_two_digits in ['34', '37'] and len(clean_number) == 15:
-        # American Express
-        valid_bin = True
-    elif ((first_four_digits == '6011') or
-          (clean_number[:3] in ['644', '645', '646', '647', '648', '649']) or
-          (first_two_digits == '65') or
-          (clean_number[:6] >= '622126' and clean_number[:6] <= '622925')) and len(clean_number) >= 16 and len(clean_number) <= 19:
-        # Discover
-        valid_bin = True
-    elif ((first_two_digits in ['36', '38', '39'] or 
-          (first_three := clean_number[:3]) and first_three >= '300' and first_three <= '305')) and len(clean_number) >= 14 and len(clean_number) <= 19:
-        # Diners Club
-        valid_bin = True
-    elif (first_four_digits >= '3528' and first_four_digits <= '3589') and len(clean_number) >= 16 and len(clean_number) <= 19:
-        # JCB
-        valid_bin = True
-    elif first_two_digits == '62' and len(clean_number) >= 16 and len(clean_number) <= 19:
-        # UnionPay
-        valid_bin = True
-    elif first_two_digits == '35' and len(clean_number) == 16:
-        # Additional check for some JCB cards
-        valid_bin = True
-    
-    # If BIN pattern check is enabled and fails, return False
-    # Setting this to False since we want to support all types of cards, even if they don't match common patterns
-    # Change to True if you want to enforce strict BIN pattern validation
-    enforce_bin_pattern = False
-    if enforce_bin_pattern and not valid_bin:
-        return False
-    
-    # Perform Luhn check
-    return luhn_check(clean_number)
+    return str(check_digit)
 
-def validate_cc_format(cc_number: str, month: str, year: str, cvv: str) -> bool:
+def validate_bin(bin_prefix: str) -> bool:
     """
-    Validate credit card format and perform comprehensive checks.
+    Validate if a BIN (Bank Identification Number) exists.
     
     Args:
-        cc_number: Credit card number.
-        month: Expiry month.
-        year: Expiry year.
-        cvv: CVV code.
+        bin_prefix: The first 6 digits of a credit card number
         
     Returns:
-        True if all details are valid, False otherwise.
+        True if the BIN exists, False otherwise
     """
-    # Clean the card number (remove spaces, dashes, etc.)
-    clean_number = re.sub(r'[\s\-_+.]', '', cc_number)
+    # Clean up the bin prefix
+    bin_prefix = bin_prefix.replace(' ', '').replace('-', '')
     
-    # Perform comprehensive card number validation
-    # (this includes length check, BIN pattern check, Luhn algorithm)
-    if not is_valid_card_number(clean_number):
+    # Check if the BIN has the correct length and contains only digits
+    if not bin_prefix.isdigit() or len(bin_prefix) < 4 or len(bin_prefix) > 8:
         return False
-    
-    # Validate month (1-12)
-    try:
-        m = int(month)
-        if m < 1 or m > 12:
-            return False
-    except ValueError:
-        return False
-    
-    # Validate year (current year or future)
-    import datetime
-    current_year = datetime.datetime.now().year
-    current_month = datetime.datetime.now().month
-    try:
-        y = int(year)
-        if len(year) == 2:
-            y = 2000 + y
         
-        # Check if card is expired
-        if y < current_year or (y == current_year and int(month) < current_month):
-            return False
-    except ValueError:
-        return False
+    # Get BIN info to check if it exists
+    bin_info = get_bin_info(bin_prefix[:6])
     
-    # Validate CVV based on card type
-    first_digit = clean_number[0]
-    first_two_digits = clean_number[:2]
-    
-    # For American Express (starts with 34 or 37), CVV should be 4 digits
-    if first_two_digits in ['34', '37'] and not re.match(r'^\d{4}$', cvv):
-        return False
-    # For all other cards, CVV should be 3 digits
-    elif first_two_digits not in ['34', '37'] and not re.match(r'^\d{3}$', cvv):
-        return False
-    
-    return True
-
-def generate_random_cc(bin_prefix: str = "") -> Dict[str, str]:
-    """
-    Generate a random credit card number with specified BIN prefix that passes Luhn check.
-    
-    Args:
-        bin_prefix: The BIN prefix to use (optional).
-        
-    Returns:
-        Dictionary with cc, month, year, and cvv.
-    """
-    # Generate card number
-    if not bin_prefix:
-        bin_prefix = random.choice(["4", "5", "3", "6"]) + "".join(random.choices(string.digits, k=5))
-    
-    # Ensure BIN prefix is digits only
-    bin_prefix = re.sub(r'[^0-9]', '', bin_prefix)
-    
-    # Calculate the length needed for a 16-digit card
-    remaining_length = 16 - len(bin_prefix)
-    if remaining_length < 1:
-        # Truncate if too long
-        bin_prefix = bin_prefix[:15]
-        remaining_length = 1
-    
-    # Keep generating until we get a valid card number per Luhn algorithm
-    while True:
-        # Generate all but the last digit
-        partial_number = bin_prefix
-        if remaining_length > 1:
-            partial_number += "".join(random.choices(string.digits, k=remaining_length - 1))
-        
-        # Calculate the check digit
-        sum_digits = 0
-        for i, digit in enumerate(reversed(partial_number)):
-            d = int(digit)
-            # Every second digit from the right is doubled
-            if i % 2 == 1:
-                d *= 2
-                if d > 9:
-                    d -= 9
-            sum_digits += d
-        
-        # The check digit is the number that makes the sum divisible by 10
-        check_digit = (10 - (sum_digits % 10)) % 10
-        
-        # Assemble the complete card number
-        cc_number = partial_number + str(check_digit)
-        
-        # Verify the card passes Luhn check (defensive check)
-        if luhn_check(cc_number):
-            break
-    
-    # Generate expiry date
-    import datetime
-    current_year = datetime.datetime.now().year
-    month = str(random.randint(1, 12)).zfill(2)
-    year = str(random.randint(current_year + 1, current_year + 5))
-    
-    # Generate CVV
-    cvv = "".join(random.choices(string.digits, k=3))
-    
-    return {
-        "cc": cc_number,
-        "month": month,
-        "year": year,
-        "cvv": cvv
-    }
-
-# Global data for address generation
-COUNTRY_DATA = {
-    "US": {
-        "name": "United States",
-        "first_names": ["John", "Jane", "Robert", "Mary", "Michael", "Jennifer", "William", "Linda", "David", "Elizabeth"],
-        "last_names": ["Smith", "Johnson", "Williams", "Jones", "Brown", "Davis", "Miller", "Wilson", "Moore", "Taylor"],
-        "street_names": ["Main", "Park", "Oak", "Pine", "Maple", "Cedar", "Elm", "Washington", "Lake", "Hill"],
-        "street_types": ["St", "Ave", "Blvd", "Rd", "Dr", "Ln", "Way", "Pl", "Ct", "Terrace"],
-        "cities": ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix", "Philadelphia", "San Antonio", "San Diego", "Dallas", "San Jose"],
-        "states": {
-            "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", 
-            "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
-            "FL": "Florida", "GA": "Georgia", "HI": "Hawaii", "ID": "Idaho", 
-            "IL": "Illinois", "IN": "Indiana", "IA": "Iowa", "KS": "Kansas",
-            "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland", 
-            "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi",
-            "MO": "Missouri", "MT": "Montana", "NE": "Nebraska", "NV": "Nevada", 
-            "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico", "NY": "New York"
-        },
-        "zip_format": "#####",
-        "phone_format": "###-###-####"
-    },
-    "UK": {
-        "name": "United Kingdom",
-        "first_names": ["James", "Emma", "Harry", "Olivia", "George", "Sophie", "William", "Charlotte", "Thomas", "Amelia"],
-        "last_names": ["Smith", "Jones", "Williams", "Taylor", "Brown", "Davies", "Evans", "Wilson", "Thomas", "Johnson"],
-        "street_names": ["High", "Church", "Main", "Park", "Mill", "Station", "London", "Victoria", "Queens", "Kings"],
-        "street_types": ["Street", "Road", "Avenue", "Lane", "Drive", "Place", "Way", "Close", "Grove", "Crescent"],
-        "cities": ["London", "Birmingham", "Manchester", "Glasgow", "Liverpool", "Edinburgh", "Bristol", "Leeds", "Sheffield", "Newcastle"],
-        "states": {
-            "LDN": "London", "GLCS": "Gloucestershire", "ESSEX": "Essex", "SURY": "Surrey", 
-            "KENT": "Kent", "HERTS": "Hertfordshire", "YORKS": "Yorkshire", "LANCS": "Lancashire",
-            "MANC": "Manchester", "BUCKS": "Buckinghamshire"
-        },
-        "zip_format": "?# #??",  # UK Postcode format (e.g., M1 1AA)
-        "phone_format": "0#### ######"
-    },
-    "CA": {
-        "name": "Canada",
-        "first_names": ["Liam", "Emma", "Noah", "Olivia", "William", "Ava", "Benjamin", "Sophia", "Lucas", "Charlotte"],
-        "last_names": ["Smith", "Brown", "Tremblay", "Martin", "Roy", "Wilson", "Johnson", "MacDonald", "Gagnon", "Lee"],
-        "street_names": ["Maple", "Oak", "Pine", "Cedar", "Birch", "Elm", "Main", "Queen", "King", "Victoria"],
-        "street_types": ["Street", "Avenue", "Road", "Drive", "Boulevard", "Crescent", "Place", "Court", "Lane", "Way"],
-        "cities": ["Toronto", "Montreal", "Vancouver", "Calgary", "Ottawa", "Edmonton", "Winnipeg", "Quebec City", "Hamilton", "Halifax"],
-        "states": {
-            "ON": "Ontario", "QC": "Quebec", "BC": "British Columbia", "AB": "Alberta", 
-            "MB": "Manitoba", "SK": "Saskatchewan", "NS": "Nova Scotia", "NB": "New Brunswick",
-            "NL": "Newfoundland and Labrador", "PE": "Prince Edward Island"
-        },
-        "zip_format": "?#? #?#",  # Canadian Postal Code format (e.g., M5V 2A1)
-        "phone_format": "###-###-####"
-    },
-    "AU": {
-        "name": "Australia",
-        "first_names": ["Oliver", "Charlotte", "Jack", "Ava", "William", "Mia", "Noah", "Olivia", "Lucas", "Amelia"],
-        "last_names": ["Smith", "Jones", "Williams", "Brown", "Wilson", "Taylor", "Johnson", "White", "Martin", "Anderson"],
-        "street_names": ["High", "Church", "Main", "Park", "George", "Victoria", "Albert", "Queen", "King", "Beach"],
-        "street_types": ["Street", "Road", "Avenue", "Drive", "Court", "Place", "Lane", "Way", "Close", "Parade"],
-        "cities": ["Sydney", "Melbourne", "Brisbane", "Perth", "Adelaide", "Gold Coast", "Newcastle", "Canberra", "Wollongong", "Hobart"],
-        "states": {
-            "NSW": "New South Wales", "VIC": "Victoria", "QLD": "Queensland", "WA": "Western Australia",
-            "SA": "South Australia", "TAS": "Tasmania", "ACT": "Australian Capital Territory", "NT": "Northern Territory"
-        },
-        "zip_format": "####",  # Australian Postal Code format
-        "phone_format": "0# #### ####"
-    },
-    "DE": {
-        "name": "Germany",
-        "first_names": ["Maximilian", "Sophie", "Alexander", "Maria", "Paul", "Anna", "Leon", "Emma", "Felix", "Hannah"],
-        "last_names": ["Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker", "Hoffmann", "Schulz"],
-        "street_names": ["Haupt", "Schul", "Garten", "Kirch", "Wald", "Berg", "Bach", "Wiesen", "Dorf", "Park"],
-        "street_types": ["straße", "weg", "allee", "platz", "gasse", "ring", "damm", "ufer", "hof", "promenade"],
-        "cities": ["Berlin", "Hamburg", "Munich", "Cologne", "Frankfurt", "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen"],
-        "states": {
-            "BW": "Baden-Württemberg", "BY": "Bavaria", "BE": "Berlin", "BB": "Brandenburg",
-            "HB": "Bremen", "HH": "Hamburg", "HE": "Hesse", "NI": "Lower Saxony",
-            "MV": "Mecklenburg-Vorpommern", "NW": "North Rhine-Westphalia", "RP": "Rhineland-Palatinate", "SL": "Saarland",
-            "SN": "Saxony", "ST": "Saxony-Anhalt", "SH": "Schleswig-Holstein", "TH": "Thuringia"
-        },
-        "zip_format": "#####",  # German Postal Code format
-        "phone_format": "0### ########"
-    },
-    "FR": {
-        "name": "France",
-        "first_names": ["Lucas", "Emma", "Gabriel", "Léa", "Louis", "Manon", "Jules", "Jade", "Hugo", "Chloé"],
-        "last_names": ["Martin", "Bernard", "Dubois", "Thomas", "Robert", "Richard", "Petit", "Durand", "Leroy", "Moreau"],
-        "street_names": ["Grande", "Petit", "Principal", "Église", "Moulin", "Château", "École", "Gare", "Paris", "Mairie"],
-        "street_types": ["Rue", "Avenue", "Boulevard", "Place", "Chemin", "Impasse", "Allée", "Route", "Quai", "Cours"],
-        "cities": ["Paris", "Marseille", "Lyon", "Toulouse", "Nice", "Nantes", "Strasbourg", "Montpellier", "Bordeaux", "Lille"],
-        "states": {
-            "IDF": "Île-de-France", "ARA": "Auvergne-Rhône-Alpes", "HDF": "Hauts-de-France", "PACA": "Provence-Alpes-Côte d'Azur",
-            "GES": "Grand Est", "OCC": "Occitanie", "NOR": "Normandie", "NVA": "Nouvelle-Aquitaine",
-            "BFC": "Bourgogne-Franche-Comté", "PDL": "Pays de la Loire", "BRE": "Bretagne", "COR": "Corse"
-        },
-        "zip_format": "#####",  # French Postal Code format
-        "phone_format": "0# ## ## ## ##"
-    },
-    "JP": {
-        "name": "Japan",
-        "first_names": ["Haruto", "Yui", "Sota", "Aoi", "Yuito", "Hina", "Aoto", "Himari", "Ritsu", "Akari"],
-        "last_names": ["Sato", "Suzuki", "Takahashi", "Tanaka", "Watanabe", "Ito", "Yamamoto", "Nakamura", "Kobayashi", "Kato"],
-        "street_names": ["Sakura", "Fuji", "Higashi", "Nishi", "Minami", "Kita", "Chuo", "Heiwa", "Asahi", "Midori"],
-        "street_types": ["dori", "koji", "oji", "kaido", "namiki", "suji", "guchi", "bashi"],
-        "cities": ["Tokyo", "Yokohama", "Osaka", "Nagoya", "Sapporo", "Fukuoka", "Kobe", "Kyoto", "Kawasaki", "Saitama"],
-        "states": {
-            "TKY": "Tokyo", "OSK": "Osaka", "KNG": "Kanagawa", "AIC": "Aichi", "HKD": "Hokkaido",
-            "FKO": "Fukuoka", "HYG": "Hyogo", "KYO": "Kyoto", "STM": "Saitama", "CHB": "Chiba"
-        },
-        "zip_format": "###-####",  # Japanese Postal Code format
-        "phone_format": "0#-####-####"
-    },
-    "CN": {
-        "name": "China",
-        "first_names": ["Wei", "Jing", "Xin", "Yu", "Ming", "Hui", "Hao", "Li", "Yan", "Yong"],
-        "last_names": ["Wang", "Li", "Zhang", "Liu", "Chen", "Yang", "Huang", "Zhao", "Wu", "Zhou"],
-        "street_names": ["Zhongshan", "Jianguo", "Renmin", "Xinhua", "Beijing", "Shanghai", "Huanghe", "Yangtze", "Guangming", "Changjiang"],
-        "street_types": ["Lu", "Jie", "Dao", "Xiang", "Hutong"],
-        "cities": ["Beijing", "Shanghai", "Guangzhou", "Shenzhen", "Chengdu", "Hangzhou", "Wuhan", "Xi'an", "Nanjing", "Tianjin"],
-        "states": {
-            "BJ": "Beijing", "SH": "Shanghai", "GD": "Guangdong", "JS": "Jiangsu", "ZJ": "Zhejiang",
-            "SD": "Shandong", "HN": "Henan", "SC": "Sichuan", "HB": "Hubei", "HE": "Hebei"
-        },
-        "zip_format": "######",  # Chinese Postal Code format
-        "phone_format": "1## #### ####"
-    },
-    "IN": {
-        "name": "India",
-        "first_names": ["Aarav", "Aadhya", "Arjun", "Ananya", "Vihaan", "Aanya", "Vivaan", "Diya", "Reyansh", "Aditi"],
-        "last_names": ["Sharma", "Singh", "Kumar", "Patel", "Gupta", "Jain", "Shah", "Verma", "Rao", "Mehta"],
-        "street_names": ["Gandhi", "Nehru", "Patel", "Tagore", "Shastri", "Bose", "Tilak", "Ambedkar", "Subhash", "Azad"],
-        "street_types": ["Road", "Street", "Marg", "Nagar", "Chowk", "Galli", "Lane", "Colony", "Bagh", "Enclave"],
-        "cities": ["Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Kolkata", "Ahmedabad", "Pune", "Jaipur", "Lucknow"],
-        "states": {
-            "MH": "Maharashtra", "DL": "Delhi", "KA": "Karnataka", "TG": "Telangana", "TN": "Tamil Nadu",
-            "WB": "West Bengal", "GJ": "Gujarat", "RJ": "Rajasthan", "UP": "Uttar Pradesh", "MP": "Madhya Pradesh"
-        },
-        "zip_format": "######",  # Indian Postal Code format
-        "phone_format": "+91 ## #### ####"
-    },
-    "BR": {
-        "name": "Brazil",
-        "first_names": ["Miguel", "Sophia", "Davi", "Alice", "Arthur", "Julia", "Pedro", "Isabella", "Gabriel", "Manuela"],
-        "last_names": ["Silva", "Santos", "Oliveira", "Souza", "Lima", "Pereira", "Ferreira", "Costa", "Rodrigues", "Almeida"],
-        "street_names": ["Brasil", "São Paulo", "Rio", "Bahia", "Minas", "Santos", "Paulista", "Amazonas", "Getúlio Vargas", "Santos Dumont"],
-        "street_types": ["Rua", "Avenida", "Alameda", "Praça", "Travessa", "Estrada", "Rodovia", "Viela", "Largo", "Boulevard"],
-        "cities": ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza", "Belo Horizonte", "Manaus", "Curitiba", "Recife", "Porto Alegre"],
-        "states": {
-            "SP": "São Paulo", "RJ": "Rio de Janeiro", "DF": "Distrito Federal", "BA": "Bahia", "CE": "Ceará",
-            "MG": "Minas Gerais", "AM": "Amazonas", "PR": "Paraná", "PE": "Pernambuco", "RS": "Rio Grande do Sul"
-        },
-        "zip_format": "#####-###",  # Brazilian Postal Code format
-        "phone_format": "(##) ####-####"
-    },
-    "RU": {
-        "name": "Russia",
-        "first_names": ["Alexander", "Anastasia", "Dmitry", "Maria", "Ivan", "Olga", "Mikhail", "Anna", "Sergey", "Ekaterina"],
-        "last_names": ["Ivanov", "Smirnov", "Kuznetsov", "Popov", "Vasiliev", "Petrov", "Sokolov", "Mikhailov", "Novikov", "Fedorov"],
-        "street_names": ["Leninskiy", "Pushkin", "Gagarin", "Sovetskaya", "Moskovskaya", "Oktyabrskaya", "Mira", "Sadovaya", "Zelenaya", "Centralnaya"],
-        "street_types": ["Prospekt", "Ulitsa", "Pereulok", "Ploshchad", "Shosse", "Naberezhnaya", "Bulvar", "Proyezd", "Tupik", "Alleya"],
-        "cities": ["Moscow", "Saint Petersburg", "Novosibirsk", "Yekaterinburg", "Kazan", "Nizhny Novgorod", "Chelyabinsk", "Omsk", "Samara", "Rostov-on-Don"],
-        "states": {
-            "MOS": "Moscow", "SPB": "Saint Petersburg", "NSO": "Novosibirsk Oblast", "SVE": "Sverdlovsk Oblast", "TA": "Tatarstan",
-            "NIZ": "Nizhny Novgorod Oblast", "CHE": "Chelyabinsk Oblast", "OMS": "Omsk Oblast", "SAM": "Samara Oblast", "ROS": "Rostov Oblast"
-        },
-        "zip_format": "######",  # Russian Postal Code format
-        "phone_format": "+7 ### ###-##-##"
-    }
-}
-
-def generate_fake_address(country_code: str = "US") -> Dict[str, str]:
-    """
-    Generate a fake address for the specified country.
-    
-    Args:
-        country_code: Two-letter country code (e.g., US, UK, CA, etc.)
-        
-    Returns:
-        Dictionary with fake address details.
-    """
-    # Clean and validate country code
-    country_code = country_code.upper().strip()
-    
-    # Handle any country code not in our database
-    if country_code not in COUNTRY_DATA:
-        # If specific country data is not available, try to find a regional substitute
-        regional_map = {
-            # European countries defaulting to UK, DE, or FR
-            "ES": "UK", "IT": "FR", "NL": "DE", "BE": "FR", "PT": "UK", 
-            "AT": "DE", "CH": "DE", "SE": "UK", "NO": "UK", "DK": "UK", 
-            "FI": "UK", "IE": "UK", "GR": "UK", "PL": "DE", "CZ": "DE",
-            "HU": "DE", "RO": "UK", "BG": "UK", "HR": "DE", "SI": "DE",
-            "SK": "DE", "LT": "UK", "LV": "UK", "EE": "UK", "LU": "DE",
-            "MT": "UK", "CY": "UK", "RS": "DE", "UA": "RU", "BY": "RU",
-            
-            # Asian countries defaulting to JP, CN, or IN
-            "KR": "JP", "TW": "CN", "HK": "CN", "SG": "JP", "MY": "JP",
-            "TH": "JP", "VN": "JP", "PH": "JP", "ID": "JP", "PK": "IN",
-            "BD": "IN", "NP": "IN", "LK": "IN", "MM": "IN", "KH": "JP",
-            "LA": "JP", "MN": "CN", "KZ": "RU", "UZ": "RU", "KG": "RU",
-            
-            # Middle East defaulting to UK or IN
-            "AE": "UK", "SA": "UK", "QA": "UK", "KW": "UK", "BH": "UK",
-            "OM": "UK", "JO": "UK", "LB": "FR", "IL": "UK", "IR": "UK",
-            "IQ": "UK", "SY": "UK", "YE": "UK",
-            
-            # African countries defaulting to UK or FR
-            "ZA": "UK", "NG": "UK", "KE": "UK", "EG": "UK", "MA": "FR",
-            "DZ": "FR", "TN": "FR", "GH": "UK", "CI": "FR", "SN": "FR",
-            "CM": "FR", "AO": "PT", "MZ": "PT", "ZW": "UK", "UG": "UK",
-            "TZ": "UK", "ET": "UK", "SD": "UK", "LY": "UK",
-            
-            # North American countries defaulting to US or CA
-            "MX": "US", "GT": "US", "CR": "US", "PA": "US", "DO": "US",
-            "JM": "UK", "TT": "UK", "BS": "US", "HN": "US", "SV": "US",
-            "NI": "US", "CU": "US", "HT": "FR",
-            
-            # South American countries defaulting to BR
-            "AR": "BR", "CL": "BR", "CO": "BR", "PE": "BR", "VE": "BR",
-            "EC": "BR", "BO": "BR", "PY": "BR", "UY": "BR", "GY": "BR",
-            "SR": "BR", "GF": "FR",
-            
-            # Oceania defaulting to AU
-            "NZ": "AU", "FJ": "AU", "PG": "AU", "SB": "AU", "VU": "AU",
-            "WS": "AU", "TO": "AU", "KI": "AU", "NC": "FR", "PF": "FR"
-        }
-        
-        # Use regional substitute if available, otherwise default to US
-        country_code = regional_map.get(country_code, "US")
-    
-    country_data = COUNTRY_DATA[country_code]
-    
-    # Generate random components
-    first_name = random.choice(country_data["first_names"])
-    last_name = random.choice(country_data["last_names"])
-    full_name = f"{first_name} {last_name}"
-    
-    street_num = random.randint(1, 999)
-    street_name = random.choice(country_data["street_names"])
-    street_type = random.choice(country_data["street_types"])
-    
-    # Adjust format based on country conventions
-    if country_code in ["JP", "CN", "KR", "TW"]:
-        # East Asian format (street/block first, then number)
-        street = f"{street_name} {street_type} {street_num}"
-    elif country_code in ["RU", "UA", "BY", "KZ"]:
-        # Russian style format
-        street = f"{street_type} {street_name}, {street_num}"
-    elif country_code in ["DE", "AT", "CH", "PL", "CZ", "SK", "HU"]:
-        # German/Central European style
-        street = f"{street_name}{street_type} {street_num}"
+    # If the BIN lookup returns Unknown for both bank and brand, it probably doesn't exist
+    if bin_info.get('bank') == 'Unknown' and bin_info.get('brand') == 'Unknown':
+        # Try using hard-coded rules to validate the BIN
+        return validate_bin_with_rules(bin_prefix)
     else:
-        # Default Western format (number first, then street)
-        street = f"{street_num} {street_name} {street_type}"
+        # BIN exists in our database
+        return True
+
+def validate_bin_with_rules(bin_prefix: str) -> bool:
+    """
+    Validate a BIN using hard-coded rules for major card networks.
     
-    city = random.choice(country_data["cities"])
-    state_abbr = random.choice(list(country_data["states"].keys()))
-    state = country_data["states"][state_abbr]
+    Args:
+        bin_prefix: The first 6 digits of a credit card number
+        
+    Returns:
+        True if the BIN is valid according to card network rules, False otherwise
+    """
+    # Visa - starts with 4
+    if bin_prefix.startswith('4'):
+        return True
+        
+    # Mastercard - starts with 51-55 or 2221-2720
+    if bin_prefix.startswith('5') and '1' <= bin_prefix[1] <= '5':
+        return True
+    if bin_prefix.startswith('2') and (
+        ('221' <= bin_prefix[1:4] <= '272' and len(bin_prefix) >= 4) or
+        ('2' <= bin_prefix[1] <= '7' and bin_prefix[2] == '0')
+    ):
+        return True
+        
+    # American Express - starts with 34 or 37
+    if bin_prefix.startswith('34') or bin_prefix.startswith('37'):
+        return True
+        
+    # Discover - starts with 6011, 644-649, or 65
+    if bin_prefix.startswith('6011') or \
+       (bin_prefix.startswith('64') and '4' <= bin_prefix[2] <= '9') or \
+       bin_prefix.startswith('65'):
+        return True
+        
+    # JCB - starts with 35
+    if bin_prefix.startswith('35'):
+        return True
+        
+    # Diners Club - starts with 300-305, 36, or 38
+    if bin_prefix.startswith('30') and '0' <= bin_prefix[2] <= '5':
+        return True
+    if bin_prefix.startswith('36') or bin_prefix.startswith('38'):
+        return True
+        
+    # UnionPay - starts with 62
+    if bin_prefix.startswith('62'):
+        return True
+        
+    # Maestro - starts with 5018, 5020, 5038, 6304, 6759, 6761, 6762, 6763
+    maestro_prefixes = ['5018', '5020', '5038', '6304', '6759', '6761', '6762', '6763']
+    for prefix in maestro_prefixes:
+        if bin_prefix.startswith(prefix):
+            return True
+            
+    # If none of the above rules match, the BIN is probably invalid
+    return False
+
+def validate_credit_card(card: str, month: str = None, year: str = None, cvv: str = None) -> Tuple[bool, str]:
+    """
+    Validate a full credit card including Luhn check and optionally exp date and CVV.
     
-    # Generate postal code using format
-    zip_code = ""
-    for char in country_data["zip_format"]:
-        if char == "#":
-            zip_code += str(random.randint(0, 9))
-        elif char == "?":
-            zip_code += random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    Args:
+        card: The credit card number
+        month: The expiration month (optional)
+        year: The expiration year (optional)
+        cvv: The card CVV (optional)
+        
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    # Clean the card number
+    card = card.replace(' ', '').replace('-', '')
+    
+    # Check if the card only has digits
+    if not card.isdigit():
+        return False, "Card number should contain only digits"
+        
+    # Check card length (most cards are 13-19 digits)
+    if len(card) < 13 or len(card) > 19:
+        return False, "Card number has invalid length"
+        
+    # Validate BIN
+    if not validate_bin(card[:6]):
+        return False, "Card has invalid BIN (bank identification number)"
+        
+    # Perform Luhn check
+    if not luhn_checksum(card):
+        return False, "Card failed Luhn algorithm validation"
+        
+    # Validate expiration date if provided
+    if month and year:
+        import datetime
+        
+        current_date = datetime.datetime.now()
+        
+        try:
+            # Clean month and year
+            month = month.strip().zfill(2)
+            
+            # Handle 2-digit or 4-digit year
+            if len(year) == 2:
+                year = f"20{year}"
+            year = year.strip()
+            
+            # Parse as integers
+            exp_month = int(month)
+            exp_year = int(year)
+            
+            # Basic range validation
+            if exp_month < 1 or exp_month > 12:
+                return False, "Invalid expiration month"
+                
+            # Create expiration date (last day of the month)
+            if exp_month == 12:
+                exp_date = datetime.datetime(exp_year + 1, 1, 1) - datetime.timedelta(days=1)
+            else:
+                exp_date = datetime.datetime(exp_year, exp_month + 1, 1) - datetime.timedelta(days=1)
+                
+            # Check if card is expired
+            if exp_date < current_date:
+                return False, "Card is expired"
+                
+        except ValueError:
+            return False, "Invalid expiration date format"
+            
+    # Validate CVV if provided
+    if cvv:
+        # Clean CVV
+        cvv = cvv.strip()
+        
+        if not cvv.isdigit():
+            return False, "CVV should contain only digits"
+            
+        # Get card brand to determine expected CVV length
+        bin_info = get_bin_info(card[:6])
+        brand = bin_info.get('brand', '').lower()
+        
+        # Amex requires 4-digit CVV, most others use 3 digits
+        if brand == 'american express' and len(cvv) != 4:
+            return False, "American Express cards require a 4-digit CVV"
+        elif brand != 'american express' and len(cvv) != 3:
+            return False, "Card requires a 3-digit CVV"
+    
+    # All validations passed
+    return True, "Card is valid"
+
+def bulk_validate_cards(card_list: List[str]) -> List[Dict[str, Any]]:
+    """
+    Validate a list of credit cards in bulk.
+    
+    Args:
+        card_list: List of credit card numbers to validate
+        
+    Returns:
+        List of dictionaries with validation results
+    """
+    results = []
+    
+    for card in card_list:
+        # Clean card number
+        clean_card = card.replace(' ', '').replace('-', '')
+        
+        # Parse card details if provided in format: CARD|MM|YY|CVV
+        parts = card.split('|')
+        
+        if len(parts) >= 4:
+            card_number = parts[0].strip()
+            exp_month = parts[1].strip()
+            exp_year = parts[2].strip()
+            cvv = parts[3].strip()
+            
+            is_valid, message = validate_credit_card(card_number, exp_month, exp_year, cvv)
         else:
-            zip_code += char
+            # Just validate the card number
+            is_valid, message = validate_credit_card(clean_card)
+            
+        results.append({
+            'card': clean_card,
+            'valid': is_valid,
+            'message': message
+        })
+        
+    return results
+
+def generate_random_cc(bin_prefix: str = "", include_details: bool = True) -> Dict[str, str]:
+    """
+    Generate a random valid credit card number with optional additional details.
+    The function validates that the BIN exists before generating a card.
     
-    # Generate phone number using format
-    phone = ""
-    for char in country_data["phone_format"]:
-        if char == "#":
-            phone += str(random.randint(0, 9))
+    Args:
+        bin_prefix: The BIN or prefix to use (default is empty, which uses a random valid BIN)
+        include_details: Whether to include expiry and CVV details
+        
+    Returns:
+        Dictionary with card details (number, expiry, cvv)
+    """
+    # Clean bin prefix
+    bin_prefix = bin_prefix.replace(' ', '').replace('-', '')
+    
+    # If no BIN is provided, use a random valid BIN
+    if not bin_prefix:
+        # List of sample valid BINs for major card networks
+        sample_bins = [
+            '4', '51', '52', '53', '54', '55', '37', '34', '6011', '65', 
+            '35', '30', '36', '38', '62'
+        ]
+        bin_prefix = random.choice(sample_bins)
+    
+    # Validate that the BIN exists
+    if not validate_bin(bin_prefix):
+        raise ValueError(f"Invalid BIN prefix: {bin_prefix}")
+    
+    # Generate a random card length based on the BIN
+    card_length = 16  # Default for most cards
+    
+    # Adjust length based on card network
+    if bin_prefix.startswith('34') or bin_prefix.startswith('37'):  # Amex
+        card_length = 15
+    elif bin_prefix.startswith('30') or bin_prefix.startswith('36') or bin_prefix.startswith('38'):  # Diners
+        card_length = 14
+    elif bin_prefix.startswith('35'):  # JCB
+        card_length = 16
+    
+    # Generate random digits to fill the card number
+    remaining_length = card_length - len(bin_prefix) - 1  # -1 for check digit
+    if remaining_length <= 0:
+        # If bin_prefix is already too long, truncate it
+        bin_prefix = bin_prefix[:card_length-1]
+        remaining_length = card_length - len(bin_prefix) - 1
+    
+    random_digits = ''.join([str(random.randint(0, 9)) for _ in range(remaining_length)])
+    partial_card = bin_prefix + random_digits
+    
+    # Generate the check digit
+    check_digit = generate_luhn_digit(partial_card)
+    
+    # Complete card number
+    card_number = partial_card + check_digit
+    
+    # If details are requested, generate expiry and CVV
+    result = {'cc': card_number}
+    
+    if include_details:
+        # Generate random expiry date (1-5 years in the future)
+        import datetime
+        current_year = datetime.datetime.now().year
+        current_month = datetime.datetime.now().month
+        
+        # Random future year (1-5 years ahead)
+        future_year = current_year + random.randint(1, 5)
+        
+        # Random month (if same year as current, ensure month is in the future)
+        if future_year == current_year:
+            future_month = random.randint(current_month, 12)
         else:
-            phone += char
+            future_month = random.randint(1, 12)
+        
+        # Determine CVV length (Amex uses 4 digits, others use 3)
+        cvv_length = 4 if bin_prefix.startswith('34') or bin_prefix.startswith('37') else 3
+        
+        result['month'] = str(future_month).zfill(2)
+        result['year'] = str(future_year)
+        result['cvv'] = ''.join([str(random.randint(0, 9)) for _ in range(cvv_length)])
     
-    # Generate email with locale-appropriate domain TLDs
-    domain_tlds = {
-        "US": ".com", "UK": ".co.uk", "CA": ".ca", "AU": ".com.au", 
-        "DE": ".de", "FR": ".fr", "JP": ".jp", "CN": ".cn", 
-        "IN": ".in", "BR": ".com.br", "RU": ".ru"
-    }
+    return result
+
+def generate_cards_with_bin(bin_prefix: str, count: int = 10, include_details: bool = True) -> List[Dict[str, str]]:
+    """
+    Generate multiple valid credit cards with the same BIN.
     
-    tld = domain_tlds.get(country_code, ".com")
-    email_providers = ["gmail.com", "yahoo.com", "outlook.com", f"mail{tld}", f"example{tld}"]
-    email = f"{first_name.lower()}.{last_name.lower()}{random.randint(1, 999)}@{random.choice(email_providers)}"
+    Args:
+        bin_prefix: The BIN to use for all generated cards
+        count: Number of cards to generate
+        include_details: Whether to include expiry and CVV details
+        
+    Returns:
+        List of dictionaries with card details
+    """
+    if count < 1:
+        raise ValueError("Count must be at least 1")
+        
+    if count > 100:
+        raise ValueError("Cannot generate more than 100 cards at once")
     
-    return {
-        "name": full_name,
-        "street": street,
-        "city": city,
-        "state": f"{state} ({state_abbr})",
-        "zip": zip_code,
-        "phone": phone,
-        "email": email,
-        "country": country_data["name"]
-    }
+    # Validate the BIN first
+    if not validate_bin(bin_prefix):
+        raise ValueError(f"Invalid BIN prefix: {bin_prefix}")
+    
+    cards = []
+    for _ in range(count):
+        cards.append(generate_random_cc(bin_prefix, include_details))
+    
+    return cards
+
+def format_credit_card(card_number: str, format_type: str = 'default') -> str:
+    """
+    Format a credit card number according to the specified format.
+    
+    Args:
+        card_number: The credit card number to format
+        format_type: The type of formatting to apply ('default', 'dashed', 'spaced')
+        
+    Returns:
+        Formatted card number string
+    """
+    # Clean the card number
+    card_number = card_number.replace(' ', '').replace('-', '')
+    
+    if format_type == 'default':
+        # Most cards use groups of 4 digits
+        if len(card_number) == 15:  # AMEX
+            return f"{card_number[:4]} {card_number[4:10]} {card_number[10:]}"
+        else:
+            parts = [card_number[i:i+4] for i in range(0, len(card_number), 4)]
+            return ' '.join(parts)
+    
+    elif format_type == 'dashed':
+        # Format with dashes between groups
+        if len(card_number) == 15:  # AMEX
+            return f"{card_number[:4]}-{card_number[4:10]}-{card_number[10:]}"
+        else:
+            parts = [card_number[i:i+4] for i in range(0, len(card_number), 4)]
+            return '-'.join(parts)
+    
+    elif format_type == 'spaced':
+        # Format with spaces between every 4 digits
+        parts = [card_number[i:i+4] for i in range(0, len(card_number), 4)]
+        return ' '.join(parts)
+    
+    elif format_type == 'none':
+        # No formatting
+        return card_number
+    
+    else:
+        # Default to no formatting if an invalid format type is specified
+        return card_number

@@ -1,142 +1,612 @@
 {
-  "4": {
+  "400000": {
+    "bin": "400000",
+    "bank": "Visa",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
     "brand": "Visa",
-    "type": "Credit",
     "category": "Classic",
-    "country": "United States",
-    "bank": "JPMorgan Chase"
+    "timestamp": 1711670400
   },
-  "5": {
-    "brand": "Mastercard",
-    "type": "Credit",
-    "category": "Standard",
+  "411111": {
+    "bin": "411111",
+    "bank": "Chase",
     "country": "United States",
-    "bank": "Citibank"
-  },
-  "3": {
-    "brand": "American Express",
+    "country_code": "US",
     "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "414720": {
+    "bin": "414720",
+    "bank": "JPMorgan Chase Bank N.A.",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Signature",
+    "timestamp": 1711670400
+  },
+  "425907": {
+    "bin": "425907",
+    "bank": "Citibank",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
+    "brand": "Visa",
     "category": "Premium",
-    "country": "United States",
-    "bank": "American Express"
+    "timestamp": 1711670400
   },
-  "6": {
-    "brand": "Discover",
+  "456789": {
+    "bin": "456789",
+    "bank": "Bank of America",
+    "country": "United States",
+    "country_code": "US",
     "type": "Credit",
-    "category": "Standard",
-    "country": "United States",
-    "bank": "Discover Bank"
-  },
-  "401200": {
     "brand": "Visa",
-    "type": "Credit",
-    "category": "Classic",
-    "country": "United States",
-    "bank": "Bank of America"
-  },
-  "528913": {
-    "brand": "Mastercard",
-    "type": "Credit",
     "category": "Gold",
-    "country": "United States",
-    "bank": "Wells Fargo"
+    "timestamp": 1711670400
   },
-  "440393": {
-    "brand": "Visa",
-    "type": "Debit",
-    "category": "Classic",
-    "country": "United States",
-    "bank": "Chase Bank"
-  },
-  "371449": {
-    "brand": "American Express",
-    "type": "Credit",
-    "category": "Platinum",
-    "country": "United States",
-    "bank": "American Express"
-  },
-  "601111": {
-    "brand": "Discover",
-    "type": "Credit",
-    "category": "Standard",
-    "country": "United States",
-    "bank": "Discover Bank"
-  },
-  "422222": {
-    "brand": "Visa",
-    "type": "Credit",
-    "category": "Gold",
+  "491674": {
+    "bin": "491674",
+    "bank": "HSBC Bank",
     "country": "United Kingdom",
-    "bank": "Barclays"
-  },
-  "510000": {
-    "brand": "Mastercard",
-    "type": "Credit",
-    "category": "Platinum",
-    "country": "Canada",
-    "bank": "Royal Bank of Canada"
-  },
-  "432123": {
-    "brand": "Visa",
+    "country_code": "GB",
     "type": "Debit",
-    "category": "Standard",
-    "country": "Australia",
-    "bank": "Commonwealth Bank"
+    "brand": "Visa",
+    "category": "Debit",
+    "timestamp": 1711670400
   },
   "521234": {
+    "bin": "521234",
+    "bank": "Mastercard",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
     "brand": "Mastercard",
-    "type": "Debit",
     "category": "Standard",
+    "timestamp": 1711670400
+  },
+  "541333": {
+    "bin": "541333",
+    "bank": "Barclays Bank",
+    "country": "United Kingdom",
+    "country_code": "GB",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "532943": {
+    "bin": "532943",
+    "bank": "Deutsche Bank",
     "country": "Germany",
-    "bank": "Deutsche Bank"
+    "country_code": "DE",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Premium",
+    "timestamp": 1711670400
+  },
+  "550293": {
+    "bin": "550293",
+    "bank": "Credit Agricole",
+    "country": "France",
+    "country_code": "FR",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "557483": {
+    "bin": "557483",
+    "bank": "ING Bank",
+    "country": "Netherlands",
+    "country_code": "NL",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Standard",
+    "timestamp": 1711670400
+  },
+  "371234": {
+    "bin": "371234",
+    "bank": "American Express",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
+    "brand": "American Express",
+    "category": "Premium",
+    "timestamp": 1711670400
   },
   "378282": {
+    "bin": "378282",
+    "bank": "American Express",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
     "brand": "American Express",
-    "type": "Credit",
-    "category": "Gold",
-    "country": "United States",
-    "bank": "American Express"
+    "category": "Green",
+    "timestamp": 1711670400
   },
-  "620000": {
-    "brand": "Discover",
-    "type": "Credit",
-    "category": "Platinum",
-    "country": "United States",
-    "bank": "Discover Bank"
-  },
-  "357111": {
-    "brand": "JCB",
-    "type": "Credit",
-    "category": "Standard",
-    "country": "Japan",
-    "bank": "JCB Bank"
-  },
-  "400000": {
-    "brand": "Visa",
-    "type": "Credit",
-    "category": "Electron",
-    "country": "United States",
-    "bank": "US Bank"
-  },
-  "675900": {
-    "brand": "Maestro",
-    "type": "Debit",
-    "category": "Standard",
+  "344739": {
+    "bin": "344739",
+    "bank": "American Express",
     "country": "United Kingdom",
-    "bank": "HSBC"
-  },
-  "500000": {
-    "brand": "Mastercard",
+    "country_code": "GB",
     "type": "Credit",
-    "category": "Standard",
-    "country": "United States",
-    "bank": "Bank of America"
+    "brand": "American Express",
+    "category": "Platinum",
+    "timestamp": 1711670400
   },
-  "471111": {
+  "601111": {
+    "bin": "601111",
+    "bank": "Discover",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
+    "brand": "Discover",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "650487": {
+    "bin": "650487",
+    "bank": "Discover",
+    "country": "United States",
+    "country_code": "US",
+    "type": "Credit",
+    "brand": "Discover",
+    "category": "Premium",
+    "timestamp": 1711670400
+  },
+  "356879": {
+    "bin": "356879",
+    "bank": "JCB",
+    "country": "Japan",
+    "country_code": "JP",
+    "type": "Credit",
+    "brand": "JCB",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "621234": {
+    "bin": "621234",
+    "bank": "China UnionPay",
+    "country": "China",
+    "country_code": "CN",
+    "type": "Credit",
+    "brand": "UnionPay",
+    "category": "Standard",
+    "timestamp": 1711670400
+  },
+  "622126": {
+    "bin": "622126",
+    "bank": "Industrial and Commercial Bank of China",
+    "country": "China",
+    "country_code": "CN",
+    "type": "Credit",
+    "brand": "UnionPay",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "625910": {
+    "bin": "625910",
+    "bank": "Bank of China",
+    "country": "China",
+    "country_code": "CN",
+    "type": "Credit",
+    "brand": "UnionPay",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "401288": {
+    "bin": "401288",
+    "bank": "Toronto-Dominion Bank",
+    "country": "Canada",
+    "country_code": "CA",
+    "type": "Credit",
     "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "589387": {
+    "bin": "589387",
+    "bank": "National Australia Bank",
+    "country": "Australia",
+    "country_code": "AU",
     "type": "Debit",
-    "category": "Business",
-    "country": "France",
-    "bank": "BNP Paribas"
+    "brand": "Mastercard",
+    "category": "Debit",
+    "timestamp": 1711670400
+  },
+  "429871": {
+    "bin": "429871",
+    "bank": "Westpac Banking Corporation",
+    "country": "Australia",
+    "country_code": "AU",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "402360": {
+    "bin": "402360",
+    "bank": "Banco Santander",
+    "country": "Spain",
+    "country_code": "ES",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "518791": {
+    "bin": "518791",
+    "bank": "Banco Bilbao Vizcaya Argentaria",
+    "country": "Spain",
+    "country_code": "ES",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "442729": {
+    "bin": "442729",
+    "bank": "Unicredit",
+    "country": "Italy",
+    "country_code": "IT",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "540388": {
+    "bin": "540388",
+    "bank": "Intesa Sanpaolo",
+    "country": "Italy",
+    "country_code": "IT",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "439458": {
+    "bin": "439458",
+    "bank": "SEB Group",
+    "country": "Sweden",
+    "country_code": "SE",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "531157": {
+    "bin": "531157",
+    "bank": "Swedbank",
+    "country": "Sweden",
+    "country_code": "SE",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Standard",
+    "timestamp": 1711670400
+  },
+  "489571": {
+    "bin": "489571",
+    "bank": "Caixa Geral de Depósitos",
+    "country": "Portugal",
+    "country_code": "PT",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "537472": {
+    "bin": "537472",
+    "bank": "Millennium BCP",
+    "country": "Portugal",
+    "country_code": "PT",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "405913": {
+    "bin": "405913",
+    "bank": "Tinkoff Bank",
+    "country": "Russia",
+    "country_code": "RU",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "520058": {
+    "bin": "520058",
+    "bank": "Sberbank",
+    "country": "Russia",
+    "country_code": "RU",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Premium",
+    "timestamp": 1711670400
+  },
+  "456714": {
+    "bin": "456714",
+    "bank": "Akbank",
+    "country": "Turkey",
+    "country_code": "TR",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "510118": {
+    "bin": "510118",
+    "bank": "Garanti BBVA",
+    "country": "Turkey",
+    "country_code": "TR",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "478963": {
+    "bin": "478963",
+    "bank": "First National Bank",
+    "country": "South Africa",
+    "country_code": "ZA",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "526978": {
+    "bin": "526978",
+    "bank": "Standard Bank",
+    "country": "South Africa",
+    "country_code": "ZA",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "409312": {
+    "bin": "409312",
+    "bank": "Itaú Unibanco",
+    "country": "Brazil",
+    "country_code": "BR",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "552289": {
+    "bin": "552289",
+    "bank": "Banco Bradesco",
+    "country": "Brazil",
+    "country_code": "BR",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "433387": {
+    "bin": "433387",
+    "bank": "BBVA Bancomer",
+    "country": "Mexico",
+    "country_code": "MX",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "547116": {
+    "bin": "547116",
+    "bank": "Banco Nacional de México (Banamex)",
+    "country": "Mexico",
+    "country_code": "MX",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "436203": {
+    "bin": "436203",
+    "bank": "HDFC Bank",
+    "country": "India",
+    "country_code": "IN",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "519895": {
+    "bin": "519895",
+    "bank": "State Bank of India",
+    "country": "India",
+    "country_code": "IN",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "402692": {
+    "bin": "402692",
+    "bank": "KEB Hana Bank",
+    "country": "South Korea",
+    "country_code": "KR",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Classic",
+    "timestamp": 1711670400
+  },
+  "533814": {
+    "bin": "533814",
+    "bank": "Shinhan Bank",
+    "country": "South Korea",
+    "country_code": "KR",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "411722": {
+    "bin": "411722",
+    "bank": "Emirates NBD",
+    "country": "United Arab Emirates",
+    "country_code": "AE",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Signature",
+    "timestamp": 1711670400
+  },
+  "527683": {
+    "bin": "527683",
+    "bank": "Abu Dhabi Commercial Bank",
+    "country": "United Arab Emirates",
+    "country_code": "AE",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "World",
+    "timestamp": 1711670400
+  },
+  "431019": {
+    "bin": "431019",
+    "bank": "Siam Commercial Bank",
+    "country": "Thailand",
+    "country_code": "TH",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "521645": {
+    "bin": "521645",
+    "bank": "Kasikornbank",
+    "country": "Thailand",
+    "country_code": "TH",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "416742": {
+    "bin": "416742",
+    "bank": "Standard Chartered Bank",
+    "country": "Singapore",
+    "country_code": "SG",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Infinite",
+    "timestamp": 1711670400
+  },
+  "552033": {
+    "bin": "552033",
+    "bank": "DBS Bank",
+    "country": "Singapore",
+    "country_code": "SG",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "World",
+    "timestamp": 1711670400
+  },
+  "458771": {
+    "bin": "458771",
+    "bank": "Maybank",
+    "country": "Malaysia",
+    "country_code": "MY",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "557896": {
+    "bin": "557896",
+    "bank": "CIMB Bank",
+    "country": "Malaysia",
+    "country_code": "MY",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "World",
+    "timestamp": 1711670400
+  },
+  "424484": {
+    "bin": "424484",
+    "bank": "BDO Unibank",
+    "country": "Philippines",
+    "country_code": "PH",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "513188": {
+    "bin": "513188",
+    "bank": "Bank of the Philippine Islands",
+    "country": "Philippines",
+    "country_code": "PH",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "404107": {
+    "bin": "404107",
+    "bank": "UBS",
+    "country": "Switzerland",
+    "country_code": "CH",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Signature",
+    "timestamp": 1711670400
+  },
+  "543865": {
+    "bin": "543865",
+    "bank": "Credit Suisse",
+    "country": "Switzerland",
+    "country_code": "CH",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "World",
+    "timestamp": 1711670400
+  },
+  "431724": {
+    "bin": "431724",
+    "bank": "Danske Bank",
+    "country": "Denmark",
+    "country_code": "DK",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Platinum",
+    "timestamp": 1711670400
+  },
+  "529398": {
+    "bin": "529398",
+    "bank": "Nordea",
+    "country": "Denmark",
+    "country_code": "DK",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "403280": {
+    "bin": "403280",
+    "bank": "ANZ Bank",
+    "country": "New Zealand",
+    "country_code": "NZ",
+    "type": "Credit",
+    "brand": "Visa",
+    "category": "Gold",
+    "timestamp": 1711670400
+  },
+  "529245": {
+    "bin": "529245",
+    "bank": "Bank of New Zealand",
+    "country": "New Zealand",
+    "country_code": "NZ",
+    "type": "Credit",
+    "brand": "Mastercard",
+    "category": "Platinum",
+    "timestamp": 1711670400
   }
 }
