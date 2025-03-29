@@ -301,24 +301,36 @@ async def show_helper(query) -> None:
     is_admin = query.from_user.id in ADMIN_USER_IDS
     
     message = (
-        f"<b>♦️ Helper Commands of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
-        f"<b>♦️ Status:</b> <code>✅ ACTIVE</code>\n\n"
-        f"<b>🚀 Available Commands:</b>\n\n"
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+        f"<b>AVAILABLE COMMANDS ✨</b>\n\n"
         f"<b>👤 Account Management:</b>\n"
-        f"1. Start Bot: <code>/start</code>\n"
-        f"2. Register: <code>/register</code>\n"
-        f"3. User ID: <code>/id</code>\n"
-        f"4. User Info: <code>/info</code>\n"
-        f"5. Credits Balance: <code>/credits</code>\n\n"
-        f"<b>💡 Credits & Premiums:</b>\n"
-        f"6. Credits System: <code>/howcrd</code>\n"
-        f"7. Premium Privileges: <code>/howpm</code>\n"
-        f"8. Buy Premium: <code>/buy</code>\n"
-        f"9. Redeem Code: <code>/redeem CODE</code>\n\n"
-        f"<b>👥 Community Tools:</b>\n"
-        f"10. Add to Group: <code>/howgp</code>\n\n"
-        f"<b>✏️ Tech Support:</b>\n"
-        f"11. Ping Status: <code>/ping</code>\n\n"
+        f"• <code>/start</code> - Start the bot\n"
+        f"• <code>/register</code> - Create an account\n" 
+        f"• <code>/id</code> - Get your user ID\n"
+        f"• <code>/info</code> - View account info\n"
+        f"• <code>/credits</code> - Check balance\n\n"
+        
+        f"<b>💳 Card Checker Gates:</b>\n"
+        f"• <code>/stripe</code> - Stripe Gateway\n"
+        f"• <code>/adyen</code> - Adyen Gateway\n"
+        f"• <code>/braintree</code> - Braintree\n"
+        f"• <code>/paypal</code> - PayPal\n"
+        f"• <code>/authnet</code> - Authorize.Net\n\n"
+        
+        f"<b>🛠️ Tools & Generator:</b>\n"
+        f"• <code>/gen</code> - CC Generator\n"
+        f"• <code>/fake</code> - Address Generator\n"
+        f"• <code>/bin</code> - BIN Lookup\n\n"
+        
+        f"<b>💼 Premium Features:</b>\n"
+        f"• <code>/buy</code> - Buy Premium\n"
+        f"• <code>/redeem CODE</code> - Redeem Code\n"
+        f"• <code>/howpm</code> - Premium Benefits\n"
+        f"• <code>/howcrd</code> - Credits System\n\n"
+        
+        f"<b>🔧 Other:</b>\n"
+        f"• <code>/howgp</code> - Group Usage\n"
+        f"• <code>/ping</code> - Check Status\n\n"
     )
     
     # Add admin commands if user is an admin
@@ -442,7 +454,7 @@ async def process_cc_check(update: Update, context: CallbackContext, message_tex
         # Format the response
         response = format_check_response(cc_number, month, year, cvv, result, gateway)
         
-        await status_message.edit_text(response)
+        await status_message.edit_text(response, parse_mode="HTML")
     
     except Exception as e:
         logger.error(f"Error processing CC check: {e}")
@@ -517,32 +529,30 @@ def format_check_response(cc: str, month: str, year: str, cvv: str, result: Dict
         "Unknown": "💳"
     }.get(card_brand, "💳")
     
-    # Build nicely formatted header with result banner
-    header = f"{'=' * 35}\n"
-    header += f"  {brand_emoji} CARD CHECK RESULT: {status_emoji} {'APPROVED' if success else 'DECLINED'}\n"
-    header += f"{'=' * 35}\n\n"
+    # Build modern formatted response with HTML styling
+    status_text = "APPROVED" if success else "DECLINED"
     
-    # Base response format
-    response = header + (
-        f"💳 Card: {cc[:6]}xxxxxx{cc[-4:]}\n"
-        f"📆 Expiry: {month}/{year}\n"
-        f"🔒 CVV: {cvv}\n"
-        f"🔄 Gateway: {gateway.upper()}\n"
-        f"{status_emoji} Status: {'APPROVED' if success else 'DECLINED'}\n"
-        f"📝 Message: {message}\n\n"
+    # Base response format with branding at top
+    response = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+        f"{status_emoji} <b>{status_text}</b>\n\n"
+        f"<b>• Card:</b> {cc[:6]}xxxxxx{cc[-4:]}\n"
+        f"<b>• Expiry:</b> {month}/{year}\n"
+        f"<b>• CVV:</b> {cvv}\n"
+        f"<b>• Gateway:</b> {gateway.upper()}\n"
+        f"<b>• Result:</b> {message}\n\n"
     )
     
     # Add extra details if available
     if "bin_info" in result:
         bin_info = result["bin_info"]
         response += (
-            f"📊 BIN INFORMATION:\n"
-            f"➖➖➖➖➖➖➖➖➖➖➖➖➖\n"
-            f"🏛️ Bank: {bin_info.get('bank', 'Unknown')}\n"
-            f"🌍 Country: {bin_info.get('country', 'Unknown')}\n"
-            f"💳 Type: {bin_info.get('type', 'Unknown')}\n"
-            f"🏷️ Brand: {bin_info.get('brand', 'Unknown')}\n"
-            f"🔰 Category: {bin_info.get('category', 'Unknown')}\n"
+            f"<b>━━━ BIN INFO ━━━</b>\n\n"
+            f"<b>• Bank:</b> {bin_info.get('bank', 'Unknown')}\n"
+            f"<b>• Country:</b> {bin_info.get('country', 'Unknown')}\n"
+            f"<b>• Type:</b> {bin_info.get('type', 'Unknown')}\n"
+            f"<b>• Brand:</b> {bin_info.get('brand', 'Unknown')}\n"
+            f"<b>• Category:</b> {bin_info.get('category', 'Unknown')}\n\n"
         )
     
     # Add timestamps and unique check ID
@@ -553,10 +563,10 @@ def format_check_response(cc: str, month: str, year: str, cvv: str, result: Dict
     check_id = str(uuid.uuid4())[:8]
     
     footer = (
-        f"\n🕒 Checked at: {check_time}\n"
-        f"🔑 Check ID: {check_id}\n"
-        f"🤖 Checker: VOIDVISA by @amkuush\n"
-        f"{'=' * 35}"
+        f"<b>━━━ INFO ━━━</b>\n\n"
+        f"<b>• Time:</b> {check_time}\n"
+        f"<b>• ID:</b> {check_id}\n"
+        f"<b>• Bot:</b> @VoidViSaBot"
     )
     
     return response + footer
@@ -565,7 +575,15 @@ def format_check_response(cc: str, month: str, year: str, cvv: str, result: Dict
 async def id_command(update: Update, context: CallbackContext) -> None:
     """Handle the /id command to show user ID."""
     user_id = update.effective_user.id
-    await update.message.reply_text(f"Your User ID: {user_id}")
+    
+    message = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>INFO</code>\n\n"
+        f"<b>USER ID</b>\n\n"
+        f"<code>{user_id}</code>\n\n"
+        f"<i>This is your unique user identifier in the system</i>"
+    )
+    
+    await update.message.reply_text(message, parse_mode="HTML")
 
 @require_registration
 async def info_command(update: Update, context: CallbackContext) -> None:

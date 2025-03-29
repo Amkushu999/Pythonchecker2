@@ -53,15 +53,16 @@ async def start_command(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"⭐ Hello {username}!\n\n"
-        f"Welcome aboard HUMBL3 CH3CK4R! 🚀\n\n"
-        f"I am your go-to bot, packed with a variety of gates, tools, and commands to "
-        f"enhance your experience. Excited to see what I can do?\n\n"
-        f"👇 Tap the Register button to begin your journey.\n"
-        f"👇 Discover my full capabilities by tapping the Commands button."
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+        f"Hello <b>{username}</b>! 👋\n\n"
+        f"Welcome to the premium card checking experience. "
+        f"I offer 17+ gateways and advanced tools for all your checking needs.\n\n"
+        f"<b>• Start:</b> Register to begin\n"
+        f"<b>• Explore:</b> Tap Commands to see all features\n"
+        f"<b>• Tip:</b> Premium users get unlimited private access"
     )
     
-    await update.message.reply_text(message, reply_markup=reply_markup)
+    await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
 
 async def handle_buy_request(update: Update, plan: str, reference_id: str, buyer_user_id: str) -> None:
     """Handle premium purchase requests from deep links."""
@@ -129,15 +130,16 @@ async def start_handler(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"⭐ Hello {username}!\n\n"
-        f"Welcome aboard HUMBL3 CH3CK4R! 🚀\n\n"
-        f"I am your go-to bot, packed with a variety of gates, tools, and commands to "
-        f"enhance your experience. Excited to see what I can do?\n\n"
-        f"👇 Tap the Register button to begin your journey.\n"
-        f"👇 Discover my full capabilities by tapping the Commands button."
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+        f"Hello <b>{username}</b>! 👋\n\n"
+        f"Welcome to the premium card checking experience. "
+        f"I offer 17+ gateways and advanced tools for all your checking needs.\n\n"
+        f"<b>• Start:</b> Register to begin\n"
+        f"<b>• Explore:</b> Tap Commands to see all features\n"
+        f"<b>• Tip:</b> Premium users get unlimited private access"
     )
     
-    await query.edit_message_text(message, reply_markup=reply_markup)
+    await query.edit_message_text(message, reply_markup=reply_markup, parse_mode="HTML")
 
 async def register_command(update: Update, context: CallbackContext) -> None:
     """Handle the /register command."""
@@ -147,19 +149,35 @@ async def register_command(update: Update, context: CallbackContext) -> None:
     # Check if user is already registered
     if is_user_registered(user_id):
         await update.message.reply_text(
-            f"You are already registered, {username}!\n"
-            f"Use /commands to see what you can do."
-        )
+            f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+            f"You are already registered, <b>{username}</b>!\n\n"
+            f"<b>• Use:</b> /commands to see all available features"
+        , parse_mode="HTML")
         return
     
     # Register the user
     db.register_user(user_id, username)
     
-    await update.message.reply_text(
-        f"🎉 Registration successful, {username}!\n\n"
-        f"You've been credited with 100 free credits to start.\n"
-        f"Use /commands to see all available commands."
+    user_data = db.get_user(user_id)
+    credits = user_data.get('credits', 100)
+    
+    message = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+        f"Registration Successful ✅\n\n"
+        f"<b>• Name:</b> {username}\n"
+        f"<b>• User ID:</b> {user_id}\n"
+        f"<b>• Role:</b> Free\n"
+        f"<b>• Credits:</b> {credits}\n\n"
+        f"Message: You Got {credits} Credits as a registration bonus. To Know Credits System /howcrd"
     )
+    
+    # Create keyboard with commands button
+    keyboard = [[InlineKeyboardButton("Commands", callback_data="commands")], 
+                [InlineKeyboardButton("Close", callback_data="Close")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await update.message.reply_text(message, parse_mode="HTML", reply_markup=reply_markup)
+    
 
 async def register_handler(update: Update, context: CallbackContext) -> None:
     """Handle the register callback query."""
@@ -172,16 +190,31 @@ async def register_handler(update: Update, context: CallbackContext) -> None:
     # Check if user is already registered
     if is_user_registered(user_id):
         await query.edit_message_text(
-            f"You are already registered, {username}!\n"
-            f"Use /commands to see what you can do."
-        )
+            f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+            f"You are already registered, <b>{username}</b>!\n\n"
+            f"<b>• Use:</b> /commands to see all available features"
+        , parse_mode="HTML")
         return
     
     # Register the user
     db.register_user(user_id, username)
     
-    await query.edit_message_text(
-        f"🎉 Registration successful, {username}!\n\n"
-        f"You've been credited with 100 free credits to start.\n"
-        f"Use /commands to see all available commands."
+    user_data = db.get_user(user_id)
+    credits = user_data.get('credits', 100)
+    
+    message = (
+        f"<b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>        <code>CC CHECKER</code>\n\n"
+        f"Registration Successful ✅\n\n"
+        f"<b>• Name:</b> {username}\n"
+        f"<b>• User ID:</b> {user_id}\n"
+        f"<b>• Role:</b> Free\n"
+        f"<b>• Credits:</b> {credits}\n\n"
+        f"Message: You Got {credits} Credits as a registration bonus. To Know Credits System /howcrd"
     )
+    
+    # Create keyboard with commands button
+    keyboard = [[InlineKeyboardButton("Commands", callback_data="commands")], 
+                [InlineKeyboardButton("Close", callback_data="Close")]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    
+    await query.edit_message_text(message, parse_mode="HTML", reply_markup=reply_markup)
