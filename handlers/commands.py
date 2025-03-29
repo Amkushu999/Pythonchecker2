@@ -52,21 +52,21 @@ async def commands_command(update: Update, context: CallbackContext) -> None:
     """Handle the /commands command."""
     keyboard = [
         [
-            InlineKeyboardButton("Commands", callback_data="commands")
+            InlineKeyboardButton("✨ Commands", callback_data="commands")
         ],
         [
-            InlineKeyboardButton("Close", callback_data="Close")
+            InlineKeyboardButton("❌ Close", callback_data="Close")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"💠 HUMBL3 CH3CK4R\n"
-        f"💠 Hello {update.effective_user.first_name}! Welcome aboard...\n\n"
-        f"Explore My Various Commands And Abilities By Tapping on Commands Button"
+        f"<b>💳 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚 𝐂𝐡𝐞𝐜𝐤𝐞𝐫</b>\n"
+        f"👋 <b>Hello {update.effective_user.first_name}!</b> Welcome aboard...\n\n"
+        f"<i>Explore my various commands and abilities by tapping on the Commands button below</i>"
     )
     
-    await update.message.reply_text(message, reply_markup=reply_markup)
+    await update.message.reply_text(message, reply_markup=reply_markup, parse_mode="HTML")
 
 async def command_handler(update: Update, context: CallbackContext, command_type: Optional[str] = None) -> None:
     """Handle commands and callback queries."""
@@ -173,13 +173,13 @@ async def commands_handler(query) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"💠 HUMBL3 CH3CK4R Commands Center\n\n"
-        f"Explore the various command categories below:\n\n"
-        f"1. AUTH/B3/VBV - Authentication gateways\n"
-        f"2. CHARGE - Charge gateways\n"
-        f"3. TOOLS - Utility tools\n"
-        f"4. HELPER - Help commands\n\n"
-        f"Select a category to view available commands."
+        f"<b>💳 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚 Commands Center</b>\n\n"
+        f"<i>Explore the various command categories below:</i>\n\n"
+        f"1️⃣ <b>AUTH/B3/VBV</b> - Authentication gateways\n"
+        f"2️⃣ <b>CHARGE</b> - Charge gateways\n"
+        f"3️⃣ <b>TOOLS</b> - Utility tools\n"
+        f"4️⃣ <b>HELPER</b> - Help commands\n\n"
+        f"<i>Select a category to view available commands.</i>"
     )
     
     await query.edit_message_text(message, reply_markup=reply_markup)
@@ -215,15 +215,14 @@ async def show_auth_gates(query) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"🔹 STRIPE AUTH GATES of HUMBL3 CH3CK4R\n"
-        f"🔹 Status: ✅ Active\n\n"
-        f"🚀 Quick Commands Overview:\n\n"
-        f"👤 Stripe Auth Options:\n"
-        f"1. Stripe Auth: /au cc|mm|yy|cvv ✅\n"
-        f"→ Single: /au cc|mm|yy|cvv ✅\n"
-        f"→ Mass: /mass cc|mm|yy|cvv ✅\n\n"
-        f"Total Auth Commands: 1\n\n"
-        f"Select a gateway button to check cards with that gateway."
+        f"<b>🔹 AUTH GATES of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+        f"<b>🔹 Status:</b> <code>✅ ACTIVE</code>\n\n"
+        f"<b>🚀 Available Commands:</b>\n\n"
+        f"<b>👤 Auth Options:</b>\n"
+        f"1. Auth: <code>/au cc|mm|yy|cvv</code> ✅\n"
+        f"→ Single: <code>/au cc|mm|yy|cvv</code> ✅\n"
+        f"→ Mass: <code>/mass cc|mm|yy|cvv</code> ✅\n\n"
+        f"<i>Select a gateway button below to check cards with that gateway</i>"
     )
     
     await query.edit_message_text(message, reply_markup=reply_markup)
@@ -259,16 +258,15 @@ async def show_charge_gates(query) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
     
     message = (
-        f"🔹 CHARGE GATES of HUMBL3 CH3CK4R\n"
-        f"🔹 Status: ✅ Active\n\n"
-        f"🚀 Quick Commands Overview:\n\n"
-        f"👤 Charge Auth Options:\n"
-        f"1. Stripe Charge: /charge cc|mm|yy|cvv ✅\n"
-        f"2. Shopify Charge: /shopify cc|mm|yy|cvv ✅\n"
-        f"3. WorldPay Charge: /worldpay cc|mm|yy|cvv ✅\n"
-        f"4. CyberSource Charge: /cybersource cc|mm|yy|cvv ✅\n\n"
-        f"Total Charge Commands: 4\n\n"
-        f"Select a gateway button to check cards with that gateway."
+        f"<b>🔹 CHARGE GATES of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+        f"<b>🔹 Status:</b> <code>✅ ACTIVE</code>\n\n"
+        f"<b>🚀 Available Commands:</b>\n\n"
+        f"<b>👤 Charge Options:</b>\n"
+        f"1. Stripe Charge: <code>/charge cc|mm|yy|cvv</code> ✅\n"
+        f"2. Shopify Charge: <code>/shopify cc|mm|yy|cvv</code> ✅\n"
+        f"3. WorldPay Charge: <code>/worldpay cc|mm|yy|cvv</code> ✅\n"
+        f"4. CyberSource Charge: <code>/cybersource cc|mm|yy|cvv</code> ✅\n\n"
+        f"<i>Select a gateway button below to check cards with that gateway</i>"
     )
     
     await query.edit_message_text(message, reply_markup=reply_markup)
@@ -276,13 +274,13 @@ async def show_charge_gates(query) -> None:
 async def show_tools(query) -> None:
     """Show available tools."""
     message = (
-        f"♦️ Generator Tools of HUMBL3 CH3CK4R\n"
-        f"♦️ Status: ✅ Active\n\n"
-        f"🚀 Quick Commands Overview:\n\n"
-        f"👤 Generator Tools:\n"
-        f"1. Random CC Generator Gate: /gen 440393 500 ✅ (Limit: 10k)\n"
-        f"2. Fake Address Generator Gate: /fakeus ✅\n\n"
-        f"Total Commands: 2"
+        f"<b>♦️ Generator Tools of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+        f"<b>♦️ Status:</b> <code>✅ ACTIVE</code>\n\n"
+        f"<b>🚀 Available Commands:</b>\n\n"
+        f"<b>👤 Generator Tools:</b>\n"
+        f"1. Random CC Generator: <code>/gen 440393 500</code> ✅ (Limit: 10k)\n"
+        f"2. Fake Address Generator: <code>/fakeus</code> ✅\n\n"
+        f"<i>Use these tools to generate test data for your checks</i>"
     )
     
     keyboard = [
@@ -297,26 +295,61 @@ async def show_tools(query) -> None:
 
 async def show_helper(query) -> None:
     """Show helper commands."""
+    from config import ADMIN_USER_IDS
+    
+    # Check if user is admin to show admin commands
+    is_admin = query.from_user.id in ADMIN_USER_IDS
+    
     message = (
-        f"♦️ Helper Gates of HUMBL3 CH3CK4R\n"
-        f"♦️ Status: ✅ Active\n\n"
-        f"🚀 Quick Commands Overview:\n\n"
-        f"👤 Account Management:\n"
-        f"1. Start Bot: /start\n"
-        f"2. Register: /register\n"
-        f"3. User ID: /id\n"
-        f"4. User Info: /info\n"
-        f"5. Credits Balance: /credits\n\n"
-        f"💡 Credits & Premiums:\n"
-        f"6. Credits System: /howcrd\n"
-        f"7. Premium Privileges: /howpm\n"
-        f"8. Buy Premium: /buy\n\n"
-        f"👥 Community Tools:\n"
-        f"9. Add to Group: /howgp\n\n"
-        f"✏️ Tech Support:\n"
-        f"10. Ping Status: /ping\n\n"
-        f"Total Commands: 10"
+        f"<b>♦️ Helper Commands of 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚</b>\n"
+        f"<b>♦️ Status:</b> <code>✅ ACTIVE</code>\n\n"
+        f"<b>🚀 Available Commands:</b>\n\n"
+        f"<b>👤 Account Management:</b>\n"
+        f"1. Start Bot: <code>/start</code>\n"
+        f"2. Register: <code>/register</code>\n"
+        f"3. User ID: <code>/id</code>\n"
+        f"4. User Info: <code>/info</code>\n"
+        f"5. Credits Balance: <code>/credits</code>\n\n"
+        f"<b>💡 Credits & Premiums:</b>\n"
+        f"6. Credits System: <code>/howcrd</code>\n"
+        f"7. Premium Privileges: <code>/howpm</code>\n"
+        f"8. Buy Premium: <code>/buy</code>\n"
+        f"9. Redeem Code: <code>/redeem CODE</code>\n\n"
+        f"<b>👥 Community Tools:</b>\n"
+        f"10. Add to Group: <code>/howgp</code>\n\n"
+        f"<b>✏️ Tech Support:</b>\n"
+        f"11. Ping Status: <code>/ping</code>\n\n"
     )
+    
+    # Add admin commands if user is an admin
+    if is_admin:
+        message += (
+            f"<b>🔑 Admin Commands:</b>\n\n"
+            f"<b>User Management:</b>\n"
+            f"• <code>/addcredits USER_ID AMOUNT</code> - Add credits\n"
+            f"• <code>/addpremium USER_ID DAYS</code> - Add premium\n"
+            f"• <code>/ban USER_ID REASON</code> - Ban user\n"
+            f"• <code>/unban USER_ID</code> - Unban user\n"
+            f"• <code>/banlist</code> - Show banned users\n\n"
+            
+            f"<b>System Management:</b>\n"
+            f"• <code>/lock</code> - Lock system\n"
+            f"• <code>/unlock</code> - Unlock system\n"
+            f"• <code>/maintenance [on/off]</code> - Maintenance mode\n"
+            f"• <code>/mincredits AMOUNT</code> - Min credits for private\n\n"
+            
+            f"<b>Group Management:</b>\n"
+            f"• <code>/addgroup GROUP_ID</code> - Authorize group\n"
+            f"• <code>/removegroup GROUP_ID</code> - Remove group\n"
+            f"• <code>/grouplist</code> - List groups\n\n"
+            
+            f"<b>Code Management:</b>\n"
+            f"• <code>/gencode CREDITS DAYS</code> - Generate code\n"
+            f"• <code>/stats</code> - Show system stats\n"
+            f"• <code>/broadcast MESSAGE</code> - Send to all users\n\n"
+        )
+    
+    message += f"<i>Use these commands to manage your account and get help</i>"
     
     keyboard = [
         [
@@ -345,11 +378,11 @@ async def show_gateway_instructions(query, gateway: str) -> None:
     }.get(gateway, gateway.capitalize())
     
     message = (
-        f"🔍 {gateway_name} Gate Instructions:\n\n"
-        f"1. Format: XXXXXXXXXXXXXXXX|MM|YYYY|CVV\n"
-        f"2. Example: 4111111111111111|01|2025|123\n\n"
-        f"Simply send your card in the format above to check it.\n"
-        f"Each check costs 1 credit."
+        f"<b>🔍 {gateway_name} Gate Instructions</b>\n\n"
+        f"<b>Format:</b> <code>XXXXXXXXXXXXXXXX|MM|YYYY|CVV</code>\n"
+        f"<b>Example:</b> <code>4111111111111111|01|2025|123</code>\n\n"
+        f"<i>Simply send your card in the format above to check it.</i>\n"
+        f"<b>Cost:</b> 1 credit per check"
     )
     
     keyboard = [
@@ -603,37 +636,37 @@ async def buy_command(update: Update, context: CallbackContext) -> None:
     
     # Create premium plans message
     message = (
-        f"💎 <b>HUMBL3 CH3CK4R Premium Plans</b> 💎\n\n"
-        f"Choose a plan that suits your needs:\n\n"
+        f"💎 <b>𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚 Premium Plans</b> 💎\n\n"
+        f"<i>Choose a plan that suits your needs:</i>\n\n"
         f"💠 <b>Basic Tier (1 month)</b>\n"
-        f"Price: ${plan_details['basic']['price']}\n"
+        f"Price: <code>${plan_details['basic']['price']}</code>\n"
         f"• Unlimited private checks\n"
         f"• All gateways access\n"
         f"• Priority support\n\n"
         
         f"🔶 <b>Silver Tier (3 months)</b>\n"
-        f"Price: ${plan_details['silver']['price']}\n"
+        f"Price: <code>${plan_details['silver']['price']}</code>\n"
         f"• Unlimited private checks\n"
         f"• All gateways access\n"
         f"• Priority support\n"
         f"• Save 15% vs monthly\n\n"
         
         f"🌟 <b>Gold Tier (6 months)</b>\n"
-        f"Price: ${plan_details['gold']['price']}\n"
+        f"Price: <code>${plan_details['gold']['price']}</code>\n"
         f"• Unlimited private checks\n"
         f"• All gateways access\n"
         f"• Priority support\n"
         f"• Save 25% vs monthly\n\n"
         
         f"💎 <b>Platinum Tier (12 months)</b>\n"
-        f"Price: ${plan_details['platinum']['price']}\n"
+        f"Price: <code>${plan_details['platinum']['price']}</code>\n"
         f"• Unlimited private checks\n"
         f"• All gateways access\n"
         f"• Priority support\n"
         f"• Save 33% vs monthly\n"
         f"• Early access to new features\n\n"
         
-        f"To purchase a premium plan, click the button below:"
+        f"<i>To purchase a premium plan, click the button below:</i>"
     )
     
     # Get admin username from config

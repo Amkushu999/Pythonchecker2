@@ -5,8 +5,8 @@ import os
 
 # Telegram bot settings
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-BOT_USERNAME = os.getenv("BOT_USERNAME", "HUMBL3_CH3CK4R_bot")
-BOT_NAME = "HUMBL3 CH3CK4R"
+BOT_USERNAME = os.getenv("BOT_USERNAME", "VoidViSa_bot")
+BOT_NAME = "VoidViSa"
 BOT_AUTHOR = "@amkuush"
 
 # Admin user IDs
