@@ -9,8 +9,8 @@ BOT_USERNAME = os.getenv("BOT_USERNAME", "HUMBL3_CH3CK4R_bot")
 BOT_NAME = "HUMBL3 CH3CK4R"
 BOT_AUTHOR = "@amkuush"
 
-# Add your user ID here (you need to replace this with your actual user ID)
-ADMIN_USER_IDS = [1234567890]  # Replace with your actual Telegram user ID
+# Admin user IDs
+ADMIN_USER_IDS = [7367527491]  # Your Telegram user ID
 if os.getenv("ADMIN_USER_IDS"):
     ADMIN_USER_IDS.extend([int(id) for id in os.getenv("ADMIN_USER_IDS", "").split(",") if id])
 

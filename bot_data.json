@@ -1,0 +1,12 @@
+{
+  "users": {},
+  "codes": {},
+  "authorized_groups": [],
+  "banned_users": {},
+  "config": {
+    "global_lock": false,
+    "maintenance_mode": false,
+    "min_credits_for_private": 1,
+    "group_enabled": true
+  }
+}
