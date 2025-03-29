@@ -21,7 +21,7 @@ def run_flask_app():
     app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
 
 def run_telegram_bot():
-    """Run the Telegram bot."""
+    """Run the Telegram bot using polling or webhook based on configuration."""
     try:
         import asyncio
         from telegram.ext import Application
@@ -39,15 +39,54 @@ def run_telegram_bot():
         return
 
     try:
+        # Webhook configuration
+        webhook_url = os.environ.get("WEBHOOK_URL")
+        webhook_port = int(os.environ.get("WEBHOOK_PORT", "8443"))
+        webhook_listen = os.environ.get("WEBHOOK_LISTEN", "0.0.0.0")
+        webhook_cert = os.environ.get("WEBHOOK_CERT_PATH")
+        webhook_key = os.environ.get("WEBHOOK_KEY_PATH")
+        
+        # Create the Application builder
+        application_builder = Application.builder().token(token)
+        
         # Create the Application instance
-        application = Application.builder().token(token).build()
+        application = application_builder.build()
         
         # Setup bot with all handlers
         setup_bot(application)
         
-        # Run the bot until the user presses Ctrl-C
-        logger.info("Starting Telegram bot...")
-        application.run_polling(allowed_updates=["message", "callback_query", "chat_member"])
+        # Determine whether to use webhook or polling
+        use_webhook = webhook_url is not None
+        
+        if use_webhook:
+            logger.info(f"Starting Telegram bot with webhook at {webhook_url}...")
+            
+            # Check if certificates are available for more secure webhook
+            if webhook_cert and webhook_key:
+                application.run_webhook(
+                    listen=webhook_listen,
+                    port=webhook_port,
+                    url_path=token,
+                    webhook_url=f"{webhook_url}/{token}",
+                    cert=webhook_cert,
+                    key=webhook_key,
+                    allowed_updates=["message", "callback_query", "chat_member"]
+                )
+            else:
+                # Run with webhook but without certificates (less secure)
+                application.run_webhook(
+                    listen=webhook_listen,
+                    port=webhook_port,
+                    url_path=token,
+                    webhook_url=f"{webhook_url}/{token}",
+                    allowed_updates=["message", "callback_query", "chat_member"]
+                )
+        else:
+            # Fall back to polling method if webhook isn't configured
+            logger.info("Starting Telegram bot with polling...")
+            application.run_polling(
+                allowed_updates=["message", "callback_query", "chat_member"]
+            )
     except Exception as e:
         logger.error(f"Error starting Telegram bot: {e}")
         sys.exit(1)

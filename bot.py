@@ -51,6 +51,7 @@ from handlers.admin import (
     group_list_command,
     min_credits_command,
     stats_command,
+    gateway_status_command,
     admin_help_command
 )
 
@@ -102,6 +103,7 @@ def setup_bot(application):
         "grouplist": group_list_command,
         "mincredits": min_credits_command,
         "stats": stats_command,
+        "gatewaystatus": gateway_status_command,
         "adminhelp": admin_help_command,
     }
     

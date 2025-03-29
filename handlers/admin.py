@@ -56,6 +56,8 @@ async def admin_handler(update: Update, context: CallbackContext, command: str) 
         await min_credits_command(update, context)
     elif command == "stats":
         await stats_command(update, context)
+    elif command == "gatewaystatus":
+        await gateway_status_command(update, context)
     elif command == "adminhelp":
         await admin_help_command(update, context)
 
@@ -606,34 +608,85 @@ async def admin_help_command(update: Update, context: CallbackContext) -> None:
         return
     
     message = (
-        "🔑 Admin Commands:\n\n"
-        "User Management:\n"
-        "• /addcredits USER_ID AMOUNT - Add credits to a user\n"
-        "• /addpremium USER_ID DAYS - Add premium status to a user\n"
-        "• /ban USER_ID REASON - Ban a user\n"
-        "• /unban USER_ID - Unban a user\n"
-        "• /banlist - List all banned users\n\n"
+        "<b>🔑 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚 Admin Commands</b>\n\n"
+        "<b>👤 User Management:</b>\n"
+        "• <code>/addcredits USER_ID AMOUNT</code> - Add credits\n"
+        "• <code>/addpremium USER_ID DAYS</code> - Add premium\n"
+        "• <code>/ban USER_ID REASON</code> - Ban user\n"
+        "• <code>/unban USER_ID</code> - Unban user\n"
+        "• <code>/banlist</code> - Show banned users\n\n"
         
-        "System Management:\n"
-        "• /lock - Lock the system (admins only)\n"
-        "• /unlock - Unlock the system\n"
-        "• /maintenance [on/off] - Toggle maintenance mode\n"
-        "• /mincredits AMOUNT - Set minimum credits for private use\n\n"
+        "<b>⚙️ System Management:</b>\n"
+        "• <code>/lock</code> - Lock system (admins only)\n"
+        "• <code>/unlock</code> - Unlock system\n"
+        "• <code>/maintenance [on/off]</code> - Toggle maintenance\n"
+        "• <code>/mincredits AMOUNT</code> - Set min credits\n\n"
         
-        "Group Management:\n"
-        "• /addgroup GROUP_ID - Authorize a group\n"
-        "• /removegroup GROUP_ID - Remove a group authorization\n"
-        "• /grouplist - List all authorized groups\n\n"
+        "<b>👥 Group Management:</b>\n"
+        "• <code>/addgroup GROUP_ID</code> - Authorize group\n"
+        "• <code>/removegroup GROUP_ID</code> - Remove group\n"
+        "• <code>/grouplist</code> - List all groups\n\n"
         
-        "Code Management:\n"
-        "• /gencode CREDITS PREMIUM_DAYS - Generate a redeem code\n\n"
+        "<b>🎟️ Code Management:</b>\n"
+        "• <code>/gencode CREDITS DAYS</code> - Generate code\n\n"
         
-        "Communication:\n"
-        "• /broadcast MESSAGE - Send a message to all users\n\n"
+        "<b>📢 Communication:</b>\n"
+        "• <code>/broadcast MESSAGE</code> - Message all users\n\n"
         
-        "Information:\n"
-        "• /stats - Show system statistics\n"
-        "• /adminhelp - Show this help message"
+        "<b>📊 Information:</b>\n"
+        "• <code>/stats</code> - System statistics\n"
+        "• <code>/gatewaystatus</code> - Check gateway API keys\n"
+        "• <code>/adminhelp</code> - Show this help message"
     )
     
-    await update.message.reply_text(message)
+    await update.message.reply_text(message, parse_mode="HTML")
+
+async def gateway_status_command(update: Update, context: CallbackContext) -> None:
+    """Handle the /gatewaystatus command to check the status of all payment gateways."""
+    user_id = update.effective_user.id
+    
+    # Check if user is an admin
+    if user_id not in ADMIN_USER_IDS:
+        await update.message.reply_text("You are not authorized to use this command.")
+        return
+    
+    try:
+        # Import the gateway utility functions
+        from utils.gateway_utils import get_gateway_status
+        
+        # Get the status of all gateways
+        gateway_status = get_gateway_status()
+        
+        # Format the status message
+        message = "<b>🛠️ 𝐕𝐨𝐢𝐝𝐕𝐢𝐒𝐚 Gateway Status</b>\n\n"
+        
+        # Count configured gateways
+        configured_count = sum(1 for status in gateway_status.values() if status)
+        total_count = len(gateway_status)
+        
+        message += f"<b>Summary:</b> {configured_count}/{total_count} gateways configured\n\n"
+        
+        # Group gateways by status
+        message += "<b>✅ Configured Gateways:</b>\n"
+        configured = [name.upper() for name, status in gateway_status.items() if status]
+        if configured:
+            for name in configured:
+                message += f"• <code>{name}</code>\n"
+        else:
+            message += "• None\n"
+        
+        message += "\n<b>❌ Unconfigured Gateways:</b>\n"
+        unconfigured = [name.upper() for name, status in gateway_status.items() if not status]
+        if unconfigured:
+            for name in unconfigured:
+                message += f"• <code>{name}</code>\n"
+        else:
+            message += "• None\n"
+        
+        message += "\n<i>Use the api_keys.py file to configure gateway API keys.</i>"
+        
+        await update.message.reply_text(message, parse_mode="HTML")
+    
+    except Exception as e:
+        logger.error(f"Error checking gateway status: {e}")
+        await update.message.reply_text(f"An error occurred while checking gateway status: {str(e)}")
