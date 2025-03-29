@@ -4,13 +4,13 @@ Registration handlers for the bot.
 import logging
 import time
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ContextTypes
+from telegram.ext import CallbackContext
 from database import db
 from utils.helper import is_user_registered
 
 logger = logging.getLogger(__name__)
 
-async def register_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def register_user(update: Update, context: CallbackContext) -> None:
     """Register a new user."""
     user_id = update.effective_user.id
     username = update.effective_user.username or update.effective_user.first_name
@@ -29,7 +29,7 @@ async def register_user(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         logger.error(f"Failed to register user {user_id} ({username})")
         return False, "Registration failed. Please try again later."
 
-async def show_registration_status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def show_registration_status(update: Update, context: CallbackContext) -> None:
     """Show registration status and account information."""
     user_id = update.effective_user.id
     

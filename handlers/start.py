@@ -4,13 +4,13 @@ Start and registration handlers for the bot.
 import logging
 import time
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ContextTypes
+from telegram.ext import CallbackContext
 from database import db
 from utils.helper import is_user_registered, check_premium_expiry
 
 logger = logging.getLogger(__name__)
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start_command(update: Update, context: CallbackContext) -> None:
     """Handle the /start command."""
     user_id = update.effective_user.id
     username = update.effective_user.username or update.effective_user.first_name
@@ -44,7 +44,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     
     await update.message.reply_text(message, reply_markup=reply_markup)
 
-async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def start_handler(update: Update, context: CallbackContext) -> None:
     """Handle the start callback query."""
     query = update.callback_query
     await query.answer()
@@ -73,7 +73,7 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     
     await query.edit_message_text(message, reply_markup=reply_markup)
 
-async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def register_command(update: Update, context: CallbackContext) -> None:
     """Handle the /register command."""
     user_id = update.effective_user.id
     username = update.effective_user.username or update.effective_user.first_name
@@ -95,7 +95,7 @@ async def register_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         f"Use /commands to see all available commands."
     )
 
-async def register_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def register_handler(update: Update, context: CallbackContext) -> None:
     """Handle the register callback query."""
     query = update.callback_query
     await query.answer()

@@ -4,8 +4,7 @@ Main entry point for the Voidvisa Checker Telegram Bot.
 """
 import os
 import logging
-import telegram
-from telegram.ext import ApplicationBuilder
+from telegram.ext import Updater
 from bot import setup_bot
 
 # Configure logging
@@ -23,15 +22,19 @@ def main():
         logger.error("No TELEGRAM_BOT_TOKEN found in environment variables!")
         return
 
-    # Create the Application and pass it your bot's token
-    application = ApplicationBuilder().token(token).build()
+    # Create the Updater and pass it your bot's token
+    updater = Updater(token=token, use_context=True)
+    
+    # Get the dispatcher to register handlers
+    dispatcher = updater.dispatcher
     
     # Setup bot with all handlers
-    setup_bot(application)
+    setup_bot(dispatcher)
     
     # Run the bot until the user presses Ctrl-C
     logger.info("Starting bot...")
-    application.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == '__main__':
     main()

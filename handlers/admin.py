@@ -5,13 +5,13 @@ import logging
 import random
 import string
 from telegram import Update
-from telegram.ext import ContextTypes
+from telegram.ext import CallbackContext
 from database import db
 from config import ADMIN_USER_IDS
 
 logger = logging.getLogger(__name__)
 
-async def admin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, command: str) -> None:
+async def admin_handler(update: Update, context: CallbackContext, command: str) -> None:
     """Handle admin commands."""
     user_id = update.effective_user.id
     
@@ -33,7 +33,7 @@ async def admin_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, comm
     elif command == "broadcast":
         await broadcast_command(update, context)
 
-async def add_credits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def add_credits_command(update: Update, context: CallbackContext) -> None:
     """Handle the /addcredits command to add credits to a user."""
     user_id = update.effective_user.id
     
@@ -72,7 +72,7 @@ async def add_credits_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         logger.error(f"Error adding credits: {e}")
         await update.message.reply_text("An error occurred. Please try again.")
 
-async def generate_redeem_code_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def generate_redeem_code_command(update: Update, context: CallbackContext) -> None:
     """Handle the /gencode command to generate a redeem code."""
     user_id = update.effective_user.id
     
@@ -109,7 +109,7 @@ async def generate_redeem_code_command(update: Update, context: ContextTypes.DEF
         logger.error(f"Error generating code: {e}")
         await update.message.reply_text("An error occurred. Please try again.")
 
-async def redeem_code_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def redeem_code_command(update: Update, context: CallbackContext) -> None:
     """Handle the /redeem command to redeem a code."""
     user_id = update.effective_user.id
     
@@ -152,7 +152,7 @@ async def redeem_code_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     
     await update.message.reply_text(message)
 
-async def broadcast_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def broadcast_command(update: Update, context: CallbackContext) -> None:
     """Handle the /broadcast command to send a message to all users."""
     user_id = update.effective_user.id
     

@@ -6,7 +6,7 @@ import time
 import random
 from typing import Optional, Dict, List, Union
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
-from telegram.ext import ContextTypes
+from telegram.ext import CallbackContext
 from database import db
 from utils.helper import (
     is_user_registered, 
@@ -48,7 +48,7 @@ GATEWAYS = {
     "cybersource": check_card_cybersource
 }
 
-async def commands_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def commands_command(update: Update, context: CallbackContext) -> None:
     """Handle the /commands command."""
     keyboard = [
         [
@@ -72,7 +72,7 @@ async def commands_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     
     await update.message.reply_text(message, reply_markup=reply_markup)
 
-async def command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE, command_type: Optional[str] = None) -> None:
+async def command_handler(update: Update, context: CallbackContext, command_type: Optional[str] = None) -> None:
     """Handle commands and callback queries."""
     user_id = update.effective_user.id
     username = update.effective_user.username or update.effective_user.first_name
@@ -323,7 +323,7 @@ async def show_gateway_instructions(query, gateway: str) -> None:
 @require_registration
 @require_credits(1)
 @check_rate_limit
-async def process_cc_check(update: Update, context: ContextTypes.DEFAULT_TYPE, message_text: str) -> None:
+async def process_cc_check(update: Update, context: CallbackContext, message_text: str) -> None:
     """Process a credit card check from a text message."""
     user_id = update.effective_user.id
     
@@ -378,7 +378,7 @@ async def process_cc_check(update: Update, context: ContextTypes.DEFAULT_TYPE, m
 @require_registration
 @require_credits(1)
 @check_rate_limit
-async def check_with_gateway(update: Update, context: ContextTypes.DEFAULT_TYPE, gateway: str) -> None:
+async def check_with_gateway(update: Update, context: CallbackContext, gateway: str) -> None:
     """Check a card with a specific gateway."""
     # If this is from a command, expect the card in args
     if update.message and context.args:
@@ -423,13 +423,13 @@ def format_check_response(cc: str, month: str, year: str, cvv: str, result: Dict
     return response
 
 @require_registration
-async def id_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def id_command(update: Update, context: CallbackContext) -> None:
     """Handle the /id command to show user ID."""
     user_id = update.effective_user.id
     await update.message.reply_text(f"Your User ID: {user_id}")
 
 @require_registration
-async def info_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def info_command(update: Update, context: CallbackContext) -> None:
     """Handle the /info command to show user information."""
     user_id = update.effective_user.id
     user = db.get_user(user_id)
@@ -469,7 +469,7 @@ async def info_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.message.reply_text(message)
 
 @require_registration
-async def credits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def credits_command(update: Update, context: CallbackContext) -> None:
     """Handle the /credits command to show credit balance."""
     user_id = update.effective_user.id
     user = db.get_user(user_id)
@@ -480,7 +480,7 @@ async def credits_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     )
 
 @require_registration
-async def buy_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def buy_command(update: Update, context: CallbackContext) -> None:
     """Handle the /buy command to show premium purchase options."""
     from telegram import InlineKeyboardButton, InlineKeyboardMarkup
     import os
@@ -520,7 +520,7 @@ async def buy_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     )
 
 @require_registration
-async def ping_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def ping_command(update: Update, context: CallbackContext) -> None:
     """Handle the /ping command to check bot status."""
     await update.message.reply_text(
         f"🟢 Bot is online and operational!\n"
@@ -530,7 +530,7 @@ async def ping_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 @require_registration
 @require_credits(1)
 @check_rate_limit
-async def gen_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def gen_command(update: Update, context: CallbackContext) -> None:
     """Handle the /gen command to generate random CCs."""
     user_id = update.effective_user.id
     
@@ -571,7 +571,7 @@ async def gen_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 @require_registration
 @require_credits(1)
-async def fake_us_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def fake_us_command(update: Update, context: CallbackContext) -> None:
     """Handle the /fakeus command to generate a fake US address."""
     user_id = update.effective_user.id
     
@@ -597,7 +597,7 @@ async def fake_us_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 @require_registration
 @require_credits(5)
 @check_rate_limit
-async def scr_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def scr_command(update: Update, context: CallbackContext) -> None:
     """Handle the /scr command for CC scraping."""
     user_id = update.effective_user.id
     
@@ -636,7 +636,7 @@ async def scr_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 @require_registration
 @require_credits(5)
 @check_rate_limit
-async def scrbin_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def scrbin_command(update: Update, context: CallbackContext) -> None:
     """Handle the /scrbin command for BIN-based CC scraping."""
     # Similar to scr_command but with BIN filtering
     await update.message.reply_text(
@@ -646,7 +646,7 @@ async def scrbin_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 @require_registration
 @require_credits(5)
 @check_rate_limit
-async def scrsk_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def scrsk_command(update: Update, context: CallbackContext) -> None:
     """Handle the /scrsk command for SK scraping."""
     # Similar to scr_command but for SK keys
     await update.message.reply_text(
@@ -654,7 +654,7 @@ async def scrsk_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
 @require_registration
-async def howcrd_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def howcrd_command(update: Update, context: CallbackContext) -> None:
     """Handle the /howcrd command to explain the credit system."""
     await update.message.reply_text(
         f"💰 Credit System Explanation:\n\n"
@@ -672,7 +672,7 @@ async def howcrd_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     )
 
 @require_registration
-async def howpm_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def howpm_command(update: Update, context: CallbackContext) -> None:
     """Handle the /howpm command to explain premium benefits."""
     await update.message.reply_text(
         f"💎 Premium Benefits:\n\n"
@@ -686,7 +686,7 @@ async def howpm_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
 @require_registration
-async def howgp_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def howgp_command(update: Update, context: CallbackContext) -> None:
     """Handle the /howgp command to explain group usage."""
     await update.message.reply_text(
         f"👥 Using the Bot in Groups:\n\n"
